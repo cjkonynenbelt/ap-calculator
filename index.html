@@ -400,9 +400,11 @@ const SLIDES = [
 const LINES = [
   {id:'m', label:'Monthly savings', def:true},
   {id:'y', label:'Annual savings', def:true},
-  {id:'y3', label:'3-year savings', def:true},
-  {id:'y5', label:'5-year savings', def:false},
+  {id:'yN', label:'Multi-year savings (years to pass $3,000)', def:true},
 ];
+// Multi-year line: the fewest whole years for cumulative savings to go over this amount.
+const MULTI_YEAR_TARGET = 3000, MULTI_YEAR_MAX = 10;
+function yearsOver(annual){ return annual > 0 ? Math.floor(MULTI_YEAR_TARGET / annual) + 1 : 0; }
 const STATUSES = ['New','Presented','Follow-up','Statement requested','Proposal','Won','Lost'];
 
 // ActivityPay pricing is fixed — not editable anywhere in the app.
@@ -664,7 +666,8 @@ function renderPres(){
   h += `<div class="card"><h3>Screens <span class="tag">${on} selected</span></h3>${SLIDES.map((s,i) => `
     <div class="row"><div class="grow"><div class="t">${i+1}. ${s.label}</div><div class="s">${s.s}</div></div>${sw(`data-slide="${s.id}"`, p.slides[s.id])}</div>`).join('')}</div>`;
   h += `<div class="card"><h3>On the savings screen</h3>${LINES.map(l => `
-    <div class="row"><div class="grow"><div class="t">${l.label}</div><div class="s">${c.monthly > 0 ? money(l.id==='m'?c.monthly:l.id==='y'?c.annual:l.id==='y3'?c.y3:c.y5) : '—'}</div></div>${sw(`data-line="${l.id}"`, p.lines[l.id])}</div>`).join('')}</div>`;
+    <div class="row"><div class="grow"><div class="t">${l.label}</div><div class="s">${c.monthly > 0 ? (l.id==='m' ? money(c.monthly) : l.id==='y' ? money(c.annual)
+      : (N => N < 2 ? 'Not shown — first year already passes $3,000' : N > MULTI_YEAR_MAX ? `Not shown — would take ${N} years` : `${money(c.annual*N)} over ${N} years`)(yearsOver(c.annual))) : '—'}</div></div>${sw(`data-line="${l.id}"`, p.lines[l.id])}</div>`).join('')}</div>`;
   h += `<div class="card"><h3>ActivityPay capabilities <span class="tag">${p.features.length} selected</span></h3>
     <p class="help" style="margin:0 2px 6px">Only selected items are shown. <span class="badge">On website</span> = described on activitypay.co. <span class="badge confirm">Confirm first</span> = not on the public site; confirm availability for this merchant before selecting.</p>
     ${FEATURES.map(f => `<div class="row"><div class="grow"><div class="t">${f.t} <span class="badge ${f.verified?'':'confirm'}">${f.verified?'On website':'Confirm first'}</span></div><div class="s">${f.d}</div></div>${sw(`data-feat="${f.id}"`, p.features.includes(f.id))}</div>`).join('')}
@@ -891,9 +894,10 @@ function buildSlides(){
     ${c.incl ? `<p class="fine" data-a style="--d:3">Includes estimated ${money(c.apProc)} processing + ${money(c.apSoft)} software per month.</p>` : ''}`);
 
   if(sl.savings && pos){
-    const L = LINES.filter(l => p.lines[l.id]);
-    const val = id => ({m:c.monthly, y:c.annual, y3:c.y3, y5:c.y5})[id];
-    const cap = {m:'every month', y:'every year', y3:'over 3 years', y5:'over 5 years'};
+    const N = yearsOver(c.annual);   // 2+ years only; 1 year would repeat the "every year" line
+    const L = LINES.filter(l => p.lines[l.id] && (l.id !== 'yN' || (N >= 2 && N <= MULTI_YEAR_MAX)));
+    const val = id => ({m:c.monthly, y:c.annual, yN:c.annual*N})[id];
+    const cap = {m:'every month', y:'every year', yN:`over ${N} years`};
     if(L.length){
       const hero = L[0], rest = L.slice(1);
       add('savings', `<div class="glow"></div>
