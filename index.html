@@ -121,6 +121,11 @@ details.more[open] summary{margin-bottom:8px}
 .wt .sel{background:#eef8f7;color:#127a6e;font-weight:800}
 .wt th.sel{background:#eef8f7;color:#127a6e;border-radius:8px 8px 0 0}
 .wt tr.cur td:first-child{color:var(--teal)}
+.wt.sm{font-size:13px}
+.wt.sm th{font-size:10px;letter-spacing:.02em}
+.wt.sm td{padding:9px 3px}
+.wt.sm tr.yr td{border-top:2px solid var(--faint)}
+.wt small.tl{font-size:11px;color:var(--muted);font-weight:600}
 .goalres{margin-top:12px;background:var(--bg);border-radius:14px;padding:16px 14px;text-align:center}
 .goalres .k{font-size:14px;color:var(--slate)}
 .goalres .v{font-size:38px;font-weight:800;color:var(--teal);margin:6px 0 2px}
@@ -751,7 +756,8 @@ function renderSettings(){
 /* ---------- TAB: Earnings Calculator (private — never shown in Presentation Mode) ---------- */
 const EARN_TIERS = [{id:1, pct:30}, {id:2, pct:40}, {id:3, pct:50}];
 const EARN_STD_COST = '2.00', EARN_STD_MARGIN = '0.65';
-const EARN_DEFAULTS = {volume:'100,000', cost:EARN_STD_COST, margin:EARN_STD_MARGIN, tier:1, goal:'1000', goalCustom:''};
+const EARN_DEFAULTS = {volume:'100,000', cost:EARN_STD_COST, margin:EARN_STD_MARGIN, tier:1, goal:'1000', goalCustom:'',
+  projGp:'270', projNew:'10', projAtt2:'5', projAtt3:'10', projYears:7};
 const EARN_GOALS = [500, 1000, 2000, 5000];
 const EARN_WHATIF = [25000, 50000, 100000, 250000, 500000, 1000000];
 S.e = Object.assign({}, EARN_DEFAULTS, store.get('ap.earn', {}));
@@ -764,7 +770,27 @@ function earnCalc(){
   const avail = vol * margin / 100, monthly = avail * pct / 100;
   return {vol, margin, pct, avail, monthly, annual: monthly * 12};
 }
-const earnGoal = () => S.e.goal === 'custom' ? n(S.e.goalCustom) : n(S.e.goal);
+// Residual growth projection — same math as the "Agent Residuals Proforma" sheet.
+// Accounts shrink each month by the yearly attrition rate compounded monthly, then new accounts are added.
+// Monthly GP = accounts × GP per account. A tier applies once its GP threshold is met 3 months in a row.
+const PROJ_YEARS = [3, 5, 7, 10], PROJ_RAMP = [1,3,4,4,5,5,5,5,6,7,8,9];   // year-1 new accounts per month
+const PROJ_TIERS = [{id:3, pct:50, min:50000}, {id:2, pct:40, min:25000}, {id:1, pct:30, min:0}];
+function projCalc(){
+  const e = S.e, gpAcct = n(e.projGp), perMonth = n(e.projNew);
+  const keep = r => Math.pow(1 - Math.min(Math.max(r, 0), 100) / 100, 1 / 12);
+  const k2 = keep(n(e.projAtt2)), k3 = keep(n(e.projAtt3));
+  const rows = []; let accts = 0, total = 0;
+  for(let m = 1; m <= e.projYears * 12; m++){
+    const yr = Math.ceil(m / 12);
+    accts = accts * (yr === 1 ? 1 : yr === 2 ? k2 : k3) + (yr === 1 ? PROJ_RAMP[m - 1] : perMonth);
+    const gp = accts * gpAcct, last3 = [gp, ...rows.slice(-2).map(r => r.gp)];
+    const tier = PROJ_TIERS.find(t => last3.length === 3 && last3.every(g => g >= t.min)) || PROJ_TIERS[2];
+    const pay = gp * tier.pct / 100; total += pay;
+    rows.push({m, yr, accts, gp, tier, pay, total});
+  }
+  return rows;
+}
+const earnGoal = () =>S.e.goal === 'custom' ? n(S.e.goalCustom) : n(S.e.goal);
 // volume needed so that volume × margin% × tier% = goal
 const volumeFor = (goal, margin, pct) => margin > 0 && pct > 0 ? Math.ceil(goal / (margin / 100 * pct / 100)) : 0;
 const earnMoney = v => money(v, Math.abs(Math.round(v * 100) - Math.round(v) * 100) > 0);   // cents only when there are any
@@ -819,6 +845,19 @@ function renderEarn(keepScroll){
     <div class="chips">${EARN_GOALS.map(g => `<button class="chip ${e.goal===String(g)?'on':''}" data-goal="${g}">${money(g)}/mo</button>`).join('')}<button class="chip ${e.goal==='custom'?'on':''}" data-goal="custom">Custom</button></div>
     ${e.goal==='custom' ? eField('goalCustom','Custom monthly earnings goal','$',{ph:'1,500'}) : ''}
     <div class="goalres"><div class="k" data-eo="goalLabel"></div><div class="v num" data-eo="need">—</div><div class="s">in monthly card processing</div><div class="others" data-eo="needOthers"></div></div></div>`;
+  h += `<div class="card"><h3>Residual growth</h3>
+    <p class="help" style="margin:0 2px 10px">From the Agent Residuals Proforma. Year 1 ramps from 1 to 9 new accounts a month. Tiers go by monthly gross profit: 30% under $25K, 40% from $25K, 50% from $50K, once reached 3 months in a row.</p>
+    <div class="chips" style="margin-bottom:10px">${PROJ_YEARS.map(y => `<button class="chip ${e.projYears===y?'on':''}" data-projyears="${y}">${y} yrs</button>`).join('')}</div>
+    <div class="grid2">${eField('projGp','GP per account / mo','$',{ph:'270'})}${eField('projNew','New accts / mo, Yr 2+','#',{ph:'10'})}
+      ${eField('projAtt2','Attrition Year 2','%',{ph:'5'})}${eField('projAtt3','Attrition Year 3+','%',{ph:'10'})}</div>
+    <button class="linkbtn" data-act="projReset">Reset to proforma ($270 · 10/mo · 5% / 10%)</button>
+    <div class="goalres"><div class="k">Monthly residual by month ${e.projYears * 12}</div><div class="v num" data-eo="projEnd">—</div>
+      <div class="s" data-eo="projSub"></div></div>
+    <table class="wt sm" style="margin-top:12px"><thead><tr><th>Year</th><th>Accounts</th><th>Monthly GP</th><th>You earn / mo</th><th>Year total</th></tr></thead>
+      <tbody data-eo="projYears"></tbody></table>
+    <details class="more" style="margin-top:8px"><summary>Show all ${e.projYears * 12} months</summary>
+      <table class="wt sm"><thead><tr><th>Month</th><th>Accounts</th><th>Monthly GP</th><th>Tier</th><th>You earn</th></tr></thead>
+      <tbody data-eo="projMonths"></tbody></table></details></div>`;
   h += `<p class="help" style="margin:4px 4px 0">Estimates for illustration only. Actual earnings depend on your agreement with ActivityPay and on real card costs.</p>`;
   $('#view').innerHTML = h;
   updateEarn();
@@ -849,6 +888,14 @@ function updateEarn(){
   set('goalLabel', goal > 0 ? `To earn <b>${earnMoney(goal)}/month</b> at Tier ${e.tier} (${c.pct}%), you need about` : 'Enter a monthly earnings goal', true);
   set('need', goal > 0 && need ? money(need) : '—');
   set('needOthers', goal > 0 && c.margin > 0 ? EARN_TIERS.filter(t => t.id !== e.tier).map(t => `Tier ${t.id}: ${money(volumeFor(goal, c.margin, t.pct))}`).join(' · ') : '');
+  const rows = projCalc(), end = rows[rows.length - 1], cents = v => money(v, true);
+  set('projEnd', money(end.pay));
+  set('projSub', `${Math.round(end.accts).toLocaleString('en-US')} accounts · Tier ${end.tier.id} (${end.tier.pct}%) · ${money(end.total)} earned over ${e.projYears} years`);
+  set('projYears', rows.filter(r => r.m % 12 === 0).map(r => {
+    const yearTotal = rows.filter(x => x.yr === r.yr).reduce((a, x) => a + x.pay, 0);
+    return `<tr><td>${r.yr}</td><td>${Math.round(r.accts)}</td><td>${money(r.gp)}</td><td>${money(r.pay)}<br><small class="tl">Tier ${r.tier.id} · ${r.tier.pct}%</small></td><td>${money(yearTotal)}</td></tr>`;
+  }).join(''), true);
+  set('projMonths', rows.map(r => `<tr class="${r.m % 12 === 1 ? 'yr' : ''}"><td>${r.m}</td><td>${Math.round(r.accts)}</td><td>${cents(r.gp)}</td><td>${r.tier.pct}%</td><td>${cents(r.pay)}</td></tr>`).join(''), true);
 }
 
 /* ---------- tab routing ---------- */
@@ -921,7 +968,8 @@ view.addEventListener('keydown', e => {
   }
 });
 view.addEventListener('click', async e => {
-  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal]'); if(!b) return;
+  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears]'); if(!b) return;
+  if(b.dataset.projyears){ S.e.projYears = +b.dataset.projyears; saveEarn(); renderEarn(true); return; }
   if(b.dataset.tier){ S.e.tier = +b.dataset.tier; saveEarn(); renderEarn(true); return; }
   if(b.dataset.goal){ S.e.goal = b.dataset.goal; saveEarn(); renderEarn(true);
     if(b.dataset.goal === 'custom'){ const c = $('input[data-e="goalCustom"]'); if(c) c.focus(); } return; }
@@ -952,6 +1000,7 @@ view.addEventListener('click', async e => {
   else if(a === 'report') openReport();
   else if(a === 'featNone'){ S.p.features = []; touch(); renderPres(); }
   else if(a === 'earnReset'){ S.e.cost = EARN_STD_COST; S.e.margin = EARN_STD_MARGIN; S.e._linked = true; saveEarn(); renderEarn(true); }
+  else if(a === 'projReset'){ ['projGp','projNew','projAtt2','projAtt3','projYears'].forEach(k => S.e[k] = EARN_DEFAULTS[k]); saveEarn(); renderEarn(true); }
   else if(a === 'resetDisc'){ S.settings.disclaimer = DEFAULT_DISCLAIMER; store.set('ap.settings', S.settings); renderSettings(); }
   else if(a === 'export') exportBackup();
   else if(a === 'import') $('#importFile').click();
