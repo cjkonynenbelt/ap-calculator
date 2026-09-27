@@ -16,6 +16,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
 <title>ActivityPay Calculator</title>
+<script>try{if(JSON.parse(localStorage.getItem('ap.theme'))==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
 <style>
 :root{
   --navy:#0b1c2a; --navy2:#0f2638; --navy3:#16324a;
@@ -45,9 +46,9 @@ button,input,select,textarea,label,summary,a{touch-action:manipulation}
 .topbar{position:sticky;top:var(--sat);z-index:20;display:flex;align-items:center;gap:10px;padding:10px calc(16px + var(--sar)) 10px calc(16px + var(--sal));background:rgba(244,248,251,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .topbar .mark{width:30px;height:30px;border-radius:8px;background:var(--navy);display:grid;place-items:center;flex:none}
 .topbar .mark svg{width:24px;height:24px}
-.topbar .ttl{font-weight:700;font-size:15px;line-height:1.1}
-.topbar .ttl small{display:block;font-weight:500;font-size:12px;color:var(--muted);max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rep-pill{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--slate);background:#e6eef4;padding:6px 9px;border-radius:99px}
+.topbar .ttl{font-weight:700;font-size:15px;line-height:1.1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar .ttl small{display:block;font-weight:500;font-size:12px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rep-pill{margin-left:auto;flex:none;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--slate);background:#e6eef4;padding:6px 9px;border-radius:99px}
 .rep-pill svg{width:12px;height:12px}
 #view{padding:14px calc(16px + var(--sar)) calc(150px + var(--sab)) calc(16px + var(--sal));max-width:640px;margin:0 auto}
 /* while the iPhone keyboard is open, hide the bottom bar so it can't cover the field being typed in */
@@ -70,22 +71,25 @@ body.kb #view{padding-bottom:40vh}
 .finput select{padding:12px 0;-webkit-appearance:none;appearance:none}
 .field.big .finput input{font-size:24px;font-weight:700;padding:12px 6px}
 .field.big .finput i{font-size:22px}
-.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.grid2 .flabel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:end}
+.grid2 .flabel{font-size:12.5px;line-height:1.25;overflow-wrap:anywhere}
+.h1,.flabel,.help,.card h3,#modal .box,.row .t,.row .s,.plist .item{overflow-wrap:anywhere}
 .finput{min-width:0}
 .grid2 .field{margin:0}
 textarea.notes{width:100%;min-height:110px;border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;font-size:16px;resize:vertical;outline:0}
 textarea.notes:focus{border-color:var(--teal);background:#fff}
-.readout{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px 0;border-top:1px dashed var(--line);margin-top:10px;font-size:14px;color:var(--slate)}
-.readout b{font-size:18px;color:var(--ink)}
+.readout{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 2px 0;border-top:1px dashed var(--line);margin-top:10px;font-size:14px;color:var(--slate)}
+.readout b{font-size:18px;color:var(--ink);white-space:nowrap}
+.readout span{min-width:0}
 .linkbtn{color:var(--teal);font-weight:700;font-size:14px;padding:8px 2px;min-height:44px}
 details.more summary{list-style:none;color:var(--teal);font-weight:700;font-size:14px;padding:4px 2px;min-height:44px;display:flex;align-items:center;cursor:pointer}
 details.more summary::-webkit-details-marker{display:none}
 details.more[open] summary{margin-bottom:8px}
 .results{background:linear-gradient(160deg,var(--navy) 0%,var(--navy3) 100%);color:#fff;border:0}
 .results h3{color:var(--faint)}
-.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rbox{background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px}
+.rgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.rbox{background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;min-width:0}
+.rbox .v{white-space:nowrap}
 .rbox .k{font-size:12px;color:var(--faint);font-weight:600}
 .rbox .v{font-size:22px;font-weight:800;margin-top:2px}
 .rbox.hero{grid-column:1/-1;background:rgba(78,205,196,.14)}
@@ -105,13 +109,13 @@ details.more[open] summary{margin-bottom:8px}
 .tiers button.on span,.tiers button.on b,.tiers button.on small{color:#fff}
 .flow{display:flex;flex-direction:column}
 .fstep{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:12px 14px}
-.fstep span{font-size:14px;color:var(--faint);font-weight:600}
+.fstep span{font-size:14px;color:var(--faint);font-weight:600;min-width:0}
 .fstep b{font-size:22px;font-weight:800;white-space:nowrap}
 .farrow{text-align:center;color:var(--teal2);font-size:17px;line-height:1;padding:5px 0}
 .earnhero{background:rgba(78,205,196,.14);border-radius:16px;padding:18px 14px;text-align:center}
 .earnhero .k{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:#a6ece6}
-.earnhero .v{font-size:52px;font-weight:800;color:var(--mint);line-height:1.05;margin-top:8px}
-.earnhero .v2{font-size:30px;font-weight:800;margin-top:6px}
+.earnhero .v{font-size:52px;font-weight:800;color:var(--mint);line-height:1.05;margin-top:8px;white-space:nowrap}
+.earnhero .v2{font-size:30px;font-weight:800;margin-top:6px;white-space:nowrap}
 .earnhero small{font-size:16px;color:var(--faint);font-weight:700;margin-left:3px;letter-spacing:0}
 .wt{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
 .wt th{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:6px 4px 8px;text-align:right;line-height:1.3}
@@ -128,7 +132,7 @@ details.more[open] summary{margin-bottom:8px}
 .wt small.tl{font-size:11px;color:var(--muted);font-weight:600}
 .goalres{margin-top:12px;background:var(--bg);border-radius:14px;padding:16px 14px;text-align:center}
 .goalres .k{font-size:14px;color:var(--slate)}
-.goalres .v{font-size:38px;font-weight:800;color:var(--teal);margin:6px 0 2px}
+.goalres .v{font-size:38px;font-weight:800;color:var(--teal);margin:6px 0 2px;white-space:nowrap}
 .goalres .s{font-size:13px;color:var(--muted);font-weight:600}
 .goalres .others{font-size:13px;color:var(--slate);margin-top:8px}
 .warn{margin-top:10px;background:rgba(251,133,0,.16);color:#ffd19a;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600}
@@ -185,9 +189,9 @@ details.more[open] summary{margin-bottom:8px}
 /* ============ PRESENTATION MODE ============ */
 .pres{position:fixed;inset:0;z-index:50;color:#fff;background:radial-gradient(120% 70% at 50% 0%,#17405a 0%,var(--navy) 55%,#07131d 100%);display:flex;flex-direction:column;padding-top:var(--sat);padding-bottom:var(--sab);overflow:hidden;overflow:clip;user-select:none;-webkit-user-select:none;touch-action:pan-y}
 .pres-top{display:flex;align-items:center;gap:10px;padding:14px calc(20px + var(--sar)) 0 calc(20px + var(--sal));flex:none}
-.pres-top .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;letter-spacing:.01em}
+.pres-top .brand{flex:none;display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;letter-spacing:.01em}
 .pres-top .brand svg{width:26px;height:26px}
-.pres-top .biz{margin-left:auto;font-size:13px;color:var(--faint);font-weight:600;max-width:45vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pres-top .biz{margin-left:auto;min-width:0;font-size:13px;color:var(--faint);font-weight:600;max-width:45vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stage{position:relative;flex:1;min-height:0;overflow:hidden;overflow:clip}  /* off-screen slides must never make the view scroll sideways */
 .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:10px 26px 20px;opacity:0;transform:translateX(36px);transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1);pointer-events:none;overflow-x:hidden;overflow-y:auto;scrollbar-width:none}
 .slide::-webkit-scrollbar{display:none}
@@ -200,19 +204,20 @@ details.more[open] summary{margin-bottom:8px}
 [data-a]{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--d,0) * 140ms + 120ms)}
 .slide.in [data-a]{opacity:1;transform:none}
 .eyebrow{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal2);margin:0 0 18px}
-.biz-h{font-size:clamp(30px,9vw,48px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin:0 0 30px}
-.xxl{font-size:clamp(64px,21vw,124px);font-weight:800;line-height:1}
-.mega{font-size:clamp(76px,26vw,150px);font-weight:800;line-height:.95}
-.xl{font-size:clamp(46px,15vw,84px);font-weight:800;line-height:1}
-.md{font-size:clamp(30px,10vw,46px);font-weight:800;line-height:1}
+.biz-h{font-size:clamp(30px,9vw,48px);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin:0 0 30px;overflow-wrap:anywhere}
+.xxl{font-size:clamp(64px,21vw,124px);font-weight:800;line-height:1;white-space:nowrap}
+.mega{font-size:clamp(76px,26vw,150px);font-weight:800;line-height:.95;white-space:nowrap}
+.xl{font-size:clamp(46px,15vw,84px);font-weight:800;line-height:1;white-space:nowrap}
+.md{font-size:clamp(30px,10vw,46px);font-weight:800;line-height:1;white-space:nowrap}
 .unit{font-size:15px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:12px}
 .warm{color:#ffb35c}
 .cool{color:#8fd3ea}
 .green{color:var(--mint)}
 .lbl{font-size:15px;color:var(--faint);margin-top:10px;font-weight:600}
 .pillx{display:inline-block;width:auto;margin-top:26px;padding:10px 18px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:700;font-size:16px}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}
-.tile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px 12px}
+.tiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:30px}
+.tile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px 12px;min-width:0}
+.tile .v{white-space:nowrap}
 .tile .k{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
 .tile .v{font-size:28px;font-weight:800;margin-top:6px}
 .tile.dim .v{color:#b9c6d1;text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:rgba(255,179,92,.7)}
@@ -249,7 +254,9 @@ details.more[open] summary{margin-bottom:8px}
 .fitem .fd{font-size:14px;color:#aebfcc;margin-top:3px;line-height:1.35}
 .fgrid.compact .fitem{padding:11px 14px}
 .fgrid.compact .fd{display:none}
-.h2{font-size:clamp(30px,9vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:0 0 14px}
+.h2{font-size:clamp(30px,9vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:0 0 14px;overflow-wrap:anywhere}
+.arow .v,.bval{white-space:nowrap}
+.slines{grid-template-columns:minmax(0,1fr)}
 .lead{font-size:18px;color:#c9d6e0;line-height:1.45;margin:0 auto;max-width:400px}
 .vs{display:grid;gap:10px;margin-top:28px;text-align:left}
 .vs .fitem .ft small{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:3px}
@@ -265,7 +272,13 @@ details.more[open] summary{margin-bottom:8px}
 .dots{display:flex;gap:5px;justify-content:center;flex:1;min-width:0}
 .dots i{flex:none;width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.25);transition:.3s}
 .dots i.on{width:16px;background:#fff}
-.hide-btn{position:relative;margin-left:10px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);padding:8px 10px;border-radius:99px;background:rgba(255,255,255,.05)}
+.hide-btn{position:relative;flex:none;margin-left:10px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:rgba(255,255,255,.8);padding:8px 12px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.hide-btn svg.x{width:12px;height:12px}
+.pinpad .xq{font-size:20px;font-weight:700;color:#fff;text-align:center;padding:0 24px}
+.pinpad .xs{font-size:14px;color:#8ea3b3;margin-top:-12px;text-align:center;padding:0 24px}
+.pinpad .xb{display:flex;flex-direction:column;gap:10px;width:min(300px,82vw)}
+.pinpad .xb button{padding:15px;border-radius:14px;font-weight:700;font-size:16px;background:rgba(255,255,255,.08);color:#fff}
+.pinpad .xb button.pri{background:#fff;color:var(--navy)}
 .hide-btn::before{content:"";position:absolute;inset:-10px -8px}  /* bigger invisible hit area for the rep's thumb */
 .hide-btn svg.ring{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .hide-btn .ring rect{fill:none;stroke:var(--mint);stroke-width:2;stroke-dasharray:200;stroke-dashoffset:200}
@@ -325,6 +338,56 @@ details.more[open] summary{margin-bottom:8px}
 .rp-disc{font-size:11.5px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:14px}
 .rp-rep{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px;font-size:13px;color:var(--slate)}
 @media (max-width:520px){.rp-call{grid-template-columns:1fr;gap:8px}.rp-call div div{margin:0}.rp-call>div{display:flex;justify-content:space-between;align-items:center;padding:12px 14px}.rp-call .v{margin:0;font-size:22px}.rp-feats{columns:1}.rp-head,.rp-body{padding-left:18px;padding-right:18px}}
+/* ============ PRESENTATION ORDER (rep only) ============ */
+.orow .drag{flex:none;width:34px;height:44px;margin:-6px 0 -6px -6px;display:grid;place-items:center;color:var(--faint);font-size:20px;touch-action:none;cursor:grab}
+.orow .omove{flex:none;display:flex;gap:4px}
+.orow .omove button{width:32px;height:32px;border-radius:9px;background:var(--bg);border:1px solid var(--line);color:var(--slate);font-size:15px;font-weight:700}
+.orow .omove button:disabled{opacity:.3}
+.orow.dragging{background:var(--bg);border-radius:12px;box-shadow:0 6px 18px rgba(12,30,45,.18);position:relative;z-index:2;user-select:none;-webkit-user-select:none}
+.orow.dragging .drag{cursor:grabbing;color:var(--teal)}
+/* small iPhones (SE / mini): stack the arrows and tighten the long earnings table so nothing spills */
+@media (max-width:374px){
+  .orow{gap:8px}
+  .orow .omove{flex-direction:column;gap:3px}
+  .orow .omove button{width:30px;height:26px;font-size:13px}
+  .wt.sm{font-size:11.5px}
+  .wt.sm th{font-size:9px;letter-spacing:0}
+  .wt.sm td{padding:8px 2px}
+}
+
+/* ============ DARK MODE (rep screens; presentation is already dark) ============ */
+html[data-theme="dark"]{color-scheme:dark;
+  --ink:#e7eef4; --slate:#b4c4d1; --muted:#8fa3b4; --faint:#7d93a6;
+  --line:#243b4f; --bg:#08131c; --card:#112231;}
+html[data-theme="dark"] .topbar{background:rgba(8,19,28,.92)}
+html[data-theme="dark"] .topbar .mark{box-shadow:0 0 0 1px var(--line)}
+html[data-theme="dark"] .rep-pill,html[data-theme="dark"] .seg{background:#1a3043}
+html[data-theme="dark"] .seg button.on{background:#2b465b;color:var(--ink);box-shadow:none}
+html[data-theme="dark"] .finput:focus-within,html[data-theme="dark"] textarea.notes:focus{background:#0d1c28}
+html[data-theme="dark"] .aprate{background:#15303f}
+html[data-theme="dark"] .aprate b,html[data-theme="dark"] .linkbtn,html[data-theme="dark"] details.more summary,
+html[data-theme="dark"] .tabs button.on,html[data-theme="dark"] .goalres .v,html[data-theme="dark"] .wt tr.cur td:first-child{color:#6fb8d4}
+html[data-theme="dark"] .badge{background:rgba(31,157,143,.2);color:#62d6c8}
+html[data-theme="dark"] .badge.confirm{background:rgba(245,166,35,.18);color:#f5b95c}
+html[data-theme="dark"] .sw i{background:#34495c}
+html[data-theme="dark"] .chip,html[data-theme="dark"] .plist .item,html[data-theme="dark"] .btn,html[data-theme="dark"] #modal .box{background:var(--card)}
+html[data-theme="dark"] .chip.on{background:var(--teal);border-color:var(--teal);color:#fff}
+html[data-theme="dark"] .btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+html[data-theme="dark"] .btn.danger{color:#ff8a7a}
+html[data-theme="dark"] .status{background:#1a3043;color:var(--slate)}
+html[data-theme="dark"] .status.Won{background:rgba(31,157,143,.2);color:#62d6c8}
+html[data-theme="dark"] .status.Lost{background:rgba(214,69,69,.2);color:#ff9a9a}
+html[data-theme="dark"] .status.Presented,html[data-theme="dark"] .status.Proposal{background:rgba(58,134,168,.22);color:#8fcbe2}
+html[data-theme="dark"] .status.Follow-up{background:rgba(245,166,35,.18);color:#f5b95c}
+html[data-theme="dark"] .dock{background:rgba(10,22,32,.94)}
+html[data-theme="dark"] .results{box-shadow:0 0 0 1px var(--line)}
+html[data-theme="dark"] .wt .sel,html[data-theme="dark"] .wt th.sel{background:rgba(78,205,196,.12);color:#6fe0d4}
+html[data-theme="dark"] #modal{background:rgba(0,0,0,.6)}
+html[data-theme="dark"] #report{background:#08131c}
+/* the report is a white document (printed / shared), so it keeps the light colours */
+html[data-theme="dark"] .paper{color-scheme:light;--ink:#1c2b39;--slate:#3d5568;--muted:#6b7a8d;--faint:#8fa5b5;--line:#e3e9ef;--bg:#f4f8fb;--card:#fff}
+html[data-theme="dark"] .orow.dragging{box-shadow:0 6px 18px rgba(0,0,0,.5)}
+
 @media print{
   @page{margin:12mm}
   body{background:#fff}
@@ -365,9 +428,9 @@ details.more[open] summary{margin-bottom:8px}
   <div class="pres-top">
     <div class="brand"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#apmark"/></svg>ActivityPay</div>
     <div class="biz" id="pBiz"></div>
-    <button class="hide-btn" id="hideBtn" aria-label="Hide customer view (press and hold)">
-      <svg class="ring" viewBox="0 0 64 34" preserveAspectRatio="none"><rect x="1" y="1" width="62" height="32" rx="16" pathLength="200"/></svg>
-      Hide
+    <button class="hide-btn" id="hideBtn" aria-label="Exit presentation">
+      <svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      Exit
     </button>
   </div>
   <div class="stage" id="stage"></div>
@@ -497,6 +560,15 @@ function money(v, cents){
 const pct = v => (isFinite(v) ? v : 0).toFixed(2) + '%';
 const fmtDate = t => new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 const sumKeys = (p, keys) => keys.reduce((a,k) => a + n(p[k]), 0);
+// Shrink a value's font until it fits inside `box` (the value itself, or the row that holds it). Never grows past the CSS size.
+function fitText(el, box = el){
+  el.style.fontSize = '';
+  let s = parseFloat(getComputedStyle(el).fontSize); const min = s * 0.35;
+  while(box.scrollWidth > box.clientWidth + 1 && s > min){ s *= 0.93; el.style.fontSize = s.toFixed(1) + 'px'; }
+}
+// rules: [[valueSelector, optional closest-box selector], …]
+const fitAll = (root, rules) => rules.forEach(([sel, boxSel]) => $$(sel, root).forEach(el => { const box = boxSel ? el.closest(boxSel) : el; if(box && box.clientWidth) fitText(el, box); }));
+const fitRep = () => fitAll($('#view'), [['.rbox .v'], ['.readout b', '.readout'], ['.earnhero .v'], ['.earnhero .v2'], ['.goalres .v'], ['.fstep b', '.fstep'], ['.aprate b', '.aprate']]);
 
 function newProspect(){
   const p = {id:uid(), created:Date.now(), updated:Date.now(), saved:false, mode:'quick', status:'New',
@@ -692,16 +764,33 @@ function updateResults(){
     else if(c.incl) msg = '';
     w.innerHTML = msg ? `<div class="warn">${esc(msg)}</div>` : '';
   }
+  fitRep();
 }
+
+/* ---------- presentation order (rep's choice, saved on this device) ---------- */
+const DEFAULT_ORDER = SLIDES.map(s => s.id);
+function loadOrder(){
+  const saved = store.get('ap.slideOrder', []), ids = [];
+  (Array.isArray(saved) ? saved : []).forEach(id => { if(DEFAULT_ORDER.includes(id) && !ids.includes(id)) ids.push(id); });
+  DEFAULT_ORDER.forEach(id => { if(!ids.includes(id)) ids.push(id); });   // screens added in later versions
+  return ids;
+}
+S.order = loadOrder();
+function saveOrder(ids){ S.order = ids; store.set('ap.slideOrder', ids); }
 
 /* ---------- TAB: presentation setup ---------- */
 function renderPres(){
   const p = S.p, c = calc(p);
-  const on = SLIDES.filter(s => p.slides[s.id]).length;
+  const on = SLIDES.filter(s => p.slides[s.id]).length, last = S.order.length - 1;
   let h = `<div class="h1">What the customer sees</div>
     <p class="help" style="margin:-4px 2px 14px">Choose the screens for <b>${esc(p.business || 'this prospect')}</b>. Notes, status, pricing assumptions and other prospects never appear in the presentation.</p>`;
-  h += `<div class="card"><h3>Screens <span class="tag">${on} selected</span></h3>${SLIDES.map((s,i) => `
-    <div class="row"><div class="grow"><div class="t">${i+1}. ${s.label}</div><div class="s">${s.s}</div></div>${sw(`data-slide="${s.id}"`, p.slides[s.id])}</div>`).join('')}</div>`;
+  h += `<div class="card"><h3>Screens <span class="tag">${on} selected</span></h3>
+    <p class="help" style="margin:0 2px 6px">Presentation order: drag <b>☰</b> or use the arrows to rearrange.</p>
+    <div class="olist">${S.order.map((id,i) => { const s = SLIDES.find(x => x.id === id); return `
+    <div class="row orow" data-id="${id}"><span class="drag" aria-hidden="true">☰</span><div class="grow"><div class="t">${i+1}. ${s.label}</div><div class="s">${s.s}</div></div>
+      <span class="omove"><button data-move="${id}" data-dir="-1" aria-label="Move ${s.label} up" ${i===0?'disabled':''}>↑</button><button data-move="${id}" data-dir="1" aria-label="Move ${s.label} down" ${i===last?'disabled':''}>↓</button></span>
+      ${sw(`data-slide="${s.id}"`, p.slides[s.id])}</div>`; }).join('')}</div>
+    <button class="linkbtn" data-act="orderReset">Reset to default order</button></div>`;
   h += `<div class="card"><h3>On the savings screen</h3>${LINES.map(l => `
     <div class="row"><div class="grow"><div class="t">${l.label}</div><div class="s">${c.monthly > 0 ? (l.id==='m' ? money(c.monthly) : l.id==='y' ? money(c.annual)
       : (N => N > MULTI_YEAR_MAX ? `Not shown — would take ${N} years` : `${money(c.annual*N)} over ${N} years`)(yearsOver(c.annual))) : '—'}</div></div>${sw(`data-line="${l.id}"`, p.lines[l.id])}</div>`).join('')}</div>`;
@@ -732,7 +821,10 @@ function renderList(){
 /* ---------- TAB: settings ---------- */
 function renderSettings(){
   const s = S.settings, f = (k, label, ph, opt={}) => `<label class="field"><span class="flabel">${label}</span><span class="finput">${opt.pre?`<i>${opt.pre}</i>`:''}<input data-s="${k}" value="${esc(s[k])}" placeholder="${esc(ph||'')}" ${opt.im?`inputmode="${opt.im}"`:''} ${opt.type?`type="${opt.type}"`:''} autocomplete="off">${opt.post?`<i>${opt.post}</i>`:''}</span></label>`;
+  const th = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   $('#view').innerHTML = `<div class="h1">Settings</div>
+  <div class="card"><h3>Appearance</h3>
+    <div class="seg" style="margin:0"><button data-themeset="light" class="${th==='light'?'on':''}" aria-pressed="${th==='light'}">☀️ Light Mode</button><button data-themeset="dark" class="${th==='dark'?'on':''}" aria-pressed="${th==='dark'}">🌙 Dark Mode</button></div></div>
   <div class="card"><h3>Your details <span class="tag">shown on customer report</span></h3>
     ${f('repName','Your name','')}${f('repTitle','Title','ActivityPay Representative')}
     <div class="grid2">${f('repPhone','Phone','',{im:'tel',type:'tel'})}${f('repEmail','Email','',{im:'email',type:'email'})}</div></div>
@@ -741,7 +833,7 @@ function renderSettings(){
     <p class="help">Every ActivityPay estimate is calculated at ${AP_RATE.toFixed(2)}% of monthly card volume. This can’t be changed in the app.</p></div>
   <div class="card"><h3>Presentation lock</h3>
     ${f('pin','4-digit code to leave customer view (optional)','None',{im:'numeric'})}
-    <p class="help">Leaving the customer view always takes a press-and-hold on “Hide”. Add a code for extra protection.</p></div>
+    <p class="help">To leave the customer view, tap “Exit” (top right) or “Done” on the last screen, then confirm. Add a code for extra protection.</p></div>
   <div class="card"><h3>Disclaimer (customer report)</h3>
     <textarea class="notes" data-s="disclaimer">${esc(s.disclaimer)}</textarea>
     <button class="linkbtn" data-act="resetDisc">Reset to default wording</button></div>
@@ -895,6 +987,7 @@ function updateEarn(){
     const yearTotal = rows.filter(x => x.yr === r.yr).reduce((a, x) => a + x.pay, 0);
     return `<tr><td>${r.yr}</td><td>${Math.round(r.accts)}</td><td>${money(r.gp)}</td><td>${money(r.pay)}<br><small class="tl">Tier ${r.tier.id} · ${r.tier.pct}%</small></td><td>${money(yearTotal)}</td></tr>`;
   }).join(''), true);
+  fitRep();
   set('projMonths', rows.map(r => `<tr class="${r.m % 12 === 1 ? 'yr' : ''}"><td>${r.m}</td><td>${Math.round(r.accts)}</td><td>${cents(r.gp)}</td><td>${r.tier.pct}%</td><td>${cents(r.pay)}</td></tr>`).join(''), true);
 }
 
@@ -968,7 +1061,15 @@ view.addEventListener('keydown', e => {
   }
 });
 view.addEventListener('click', async e => {
-  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears]'); if(!b) return;
+  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-move],[data-themeset]'); if(!b) return;
+  if(b.dataset.themeset){ setTheme(b.dataset.themeset); renderSettings(); return; }
+  if(b.dataset.move){
+    const ids = [...S.order], i = ids.indexOf(b.dataset.move), j = i + +b.dataset.dir;
+    if(i < 0 || j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]]; saveOrder(ids); renderPres();
+    const again = $(`[data-move="${ids[j]}"][data-dir="${b.dataset.dir}"]`) || $(`[data-move="${ids[j]}"]`); if(again && !again.disabled) again.focus({preventScroll:true});
+    return;
+  }
   if(b.dataset.projyears){ S.e.projYears = +b.dataset.projyears; saveEarn(); renderEarn(true); return; }
   if(b.dataset.tier){ S.e.tier = +b.dataset.tier; saveEarn(); renderEarn(true); return; }
   if(b.dataset.goal){ S.e.goal = b.dataset.goal; saveEarn(); renderEarn(true);
@@ -1001,6 +1102,7 @@ view.addEventListener('click', async e => {
   else if(a === 'featNone'){ S.p.features = []; touch(); renderPres(); }
   else if(a === 'earnReset'){ S.e.cost = EARN_STD_COST; S.e.margin = EARN_STD_MARGIN; S.e._linked = true; saveEarn(); renderEarn(true); }
   else if(a === 'projReset'){ ['projGp','projNew','projAtt2','projAtt3','projYears'].forEach(k => S.e[k] = EARN_DEFAULTS[k]); saveEarn(); renderEarn(true); }
+  else if(a === 'orderReset'){ saveOrder([...DEFAULT_ORDER]); renderPres(); toast('Default order restored'); }
   else if(a === 'resetDisc'){ S.settings.disclaimer = DEFAULT_DISCLAIMER; store.set('ap.settings', S.settings); renderSettings(); }
   else if(a === 'export') exportBackup();
   else if(a === 'import') $('#importFile').click();
@@ -1012,6 +1114,46 @@ async function deleteCurrent(){
   S.p = newProspect(); persistCurrent(); renderCalc(); toast('Prospect deleted');
 }
 function migrateP(){ const base = newProspect(); for(const k in base) if(!(k in S.p)) S.p[k] = base[k]; }
+
+/* ---------- drag ☰ to reorder presentation screens (mouse + touch) ---------- */
+(function dragOrder(){
+  let d = null, raf = 0;
+  view.addEventListener('pointerdown', e => {
+    const h = e.target.closest('.orow .drag'); if(!h) return;
+    e.preventDefault();
+    const row = h.closest('.orow');
+    d = {row, list:row.parentElement, y:e.clientY};
+    try{ h.setPointerCapture(e.pointerId); }catch(err){}
+    row.classList.add('dragging');
+    const scroll = () => { if(!d) return;                         // auto-scroll near the top / bottom edge
+      const dy = d.y < 90 ? -10 : d.y > innerHeight - 170 ? 10 : 0;
+      if(dy){ window.scrollBy(0, dy); place(); } raf = requestAnimationFrame(scroll); };
+    raf = requestAnimationFrame(scroll);
+  });
+  const place = () => {
+    const others = $$('.orow', d.list).filter(r => r !== d.row);
+    const before = others.find(r => { const b = r.getBoundingClientRect(); return d.y < b.top + b.height / 2; });
+    if(before){ if(d.row.nextElementSibling !== before) d.list.insertBefore(d.row, before); }
+    else if(d.list.lastElementChild !== d.row) d.list.appendChild(d.row);
+  };
+  view.addEventListener('pointermove', e => { if(!d) return; e.preventDefault(); d.y = e.clientY; place(); });
+  const end = () => {
+    if(!d) return; cancelAnimationFrame(raf);
+    const ids = $$('.orow', d.list).map(r => r.dataset.id); d = null;
+    saveOrder(ids); renderPres();
+  };
+  view.addEventListener('pointerup', end); view.addEventListener('pointercancel', end);
+})();
+
+/* ---------- light / dark mode (saved on this device) ---------- */
+function setTheme(t){
+  document.documentElement.dataset.theme = t === 'dark' ? 'dark' : 'light';
+  store.set('ap.theme', document.documentElement.dataset.theme);
+}
+
+// Re-fit large numbers when the screen size changes (rotation, resizing).
+let fitTimer;
+addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { if(!$('#present').hidden) fitPresentation(); else fitRep(); }, 120); });
 
 $$('.tabs button').forEach(b => b.addEventListener('click', () => go(b.dataset.tab)));
 
@@ -1167,6 +1309,7 @@ function buildSlides(){
       <p class="fine" data-a style="--d:6">Estimated based on the information provided. Not a guarantee of pricing or savings.</p>
       ${r.repName ? `<p class="contact" data-a style="--d:7">Your ActivityPay contact: <b>${esc(r.repName)}</b>${r.repPhone ? ` · ${esc(r.repPhone)}` : ''}</p>` : ''}`);
   }
+  out.sort((a, b) => S.order.indexOf(a.id) - S.order.indexOf(b.id));   // the rep's chosen screen order
   return out;
 }
 
@@ -1182,13 +1325,23 @@ async function showCustomer(){
   $('#dots').innerHTML = P.slides.map(() => '<i></i>').join('');
   $('#pBiz').textContent = S.p.business;
   $('#rep').hidden = true; $('#present').hidden = false;
+  fitPresentation();
   document.querySelector('meta[name=theme-color]').content = '#0b1c2a';
-  store.set('ap.presenting', true);
+  store.set('ap.presenting', Date.now());
   if(S.p.status === 'New'){ S.p.status = 'Presented'; touch(); }
   P.i = -1; goSlide(0);
   try{ if('wakeLock' in navigator) P.wake = await navigator.wakeLock.request('screen'); }catch(e){}
 }
+// Big numbers shrink until they fit their box (e.g. $1,250,000 on a phone). Counters are measured at their final value.
+function fitPresentation(){
+  if($('#present').hidden) return;
+  const st = $('#stage');
+  $$('[data-count]', st).forEach(el => { const v = parseFloat(el.dataset.count); el.textContent = el.dataset.fmt === 'pct' ? pct(v) : money(v); });
+  fitAll(st, [['.xxl'], ['.mega'], ['.xl'], ['.md', '.sline'], ['.tile .v'], ['.arow .v', '.arow'], ['.bval', '.bcol']]);
+  $$('.slide:not(.in) [data-count]', st).forEach(el => el.textContent = el.dataset.fmt === 'pct' ? pct(0) : money(0));
+}
 function hideCustomer(){
+  $$('.pinpad', $('#present')).forEach(x => x.remove());
   $('#present').hidden = true; $('#rep').hidden = false; $('#stage').innerHTML = '';
   store.set('ap.presenting', false);
   try{ P.wake && P.wake.release(); }catch(e){} P.wake = null;
@@ -1218,7 +1371,6 @@ function goSlide(i){
   $$('#dots i').forEach((d, k) => d.classList.toggle('on', k === i));
   $('#pPrev').disabled = i === 0;
   $('#pNext').textContent = i === P.slides.length - 1 ? 'Done' : 'Next →';
-  $('#pNext').disabled = i === P.slides.length - 1;
 }
 function runCount(el){
   const to = parseFloat(el.dataset.count), fmt = el.dataset.fmt, f = v => fmt === 'pct' ? pct(v) : money(v);
@@ -1235,7 +1387,7 @@ function runCount(el){
   requestAnimationFrame(tick);
 }
 
-$('#pNext').addEventListener('click', () => goSlide(P.i + 1));
+$('#pNext').addEventListener('click', () => P.i === P.slides.length - 1 ? requestExit() : goSlide(P.i + 1));
 $('#pPrev').addEventListener('click', () => goSlide(P.i - 1));
 (function swipe(){
   let x0, y0, t0;
@@ -1250,21 +1402,27 @@ document.addEventListener('keydown', e => {
   if($('#present').hidden) return;
   if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goSlide(P.i + 1); }
   if(e.key === 'ArrowLeft') goSlide(P.i - 1);
+  if(e.key === 'Escape') requestExit();
 });
 document.addEventListener('visibilitychange', async () => {
   if(!document.hidden && !$('#present').hidden && 'wakeLock' in navigator){ try{ P.wake = await navigator.wakeLock.request('screen'); }catch(e){} }
 });
 
-/* press-and-hold to hide, optional PIN */
-(function hold(){
-  const b = $('#hideBtn'); let timer;
-  const start = e => { e.preventDefault(); b.classList.add('holding'); timer = setTimeout(() => { b.classList.remove('holding'); requestExit(); }, 900); };
-  const stop = () => { clearTimeout(timer); b.classList.remove('holding'); };
-  b.addEventListener('pointerdown', start); ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, stop));
-  b.addEventListener('contextmenu', e => e.preventDefault());
-  b.addEventListener('click', e => { e.preventDefault(); });
-})();
+/* Exit: tap "Exit" (or "Done" on the last screen, or Esc) → confirm → optional PIN → back to Rep Mode */
+$('#hideBtn').addEventListener('click', e => { e.preventDefault(); requestExit(); });
 function requestExit(){
+  if($('#present').hidden || $('.pinpad', $('#present'))) return;
+  const box = document.createElement('div'); box.className = 'pinpad';
+  box.innerHTML = `<div class="xq">Leave the presentation?</div><div class="xs">You’ll return to Rep Mode.</div>
+    <div class="xb"><button class="pri" data-x="exit">Exit to Rep Mode</button><button data-x="stay">Keep presenting</button></div>`;
+  box.addEventListener('click', e => {
+    const k = e.target.closest('button'); if(!k) return;
+    box.remove();
+    if(k.dataset.x === 'exit') pinThenExit();
+  });
+  $('#present').appendChild(box);
+}
+function pinThenExit(){
   const pin = S.settings.pin;
   if(!pin || pin.length < 4){ hideCustomer(); return; }
   let entry = '';
@@ -1364,7 +1522,11 @@ document.addEventListener('focusout', () => {
 try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
 $('#curName').textContent = S.p.business || 'New prospect';
 go(S.tab);
-if(store.get('ap.presenting', false) && !missingForShow().length) showCustomer(); // resume after iOS reload — never drop into rep mode mid-presentation
+// Resume after an iOS reload mid-presentation, but only if it started within the last 2 hours,
+// so reopening the app later never drops you straight back into the customer view.
+const presentingSince = store.get('ap.presenting', false);
+if(typeof presentingSince === 'number' && Date.now() - presentingSince < 2 * 3600e3 && !missingForShow().length) showCustomer();
+else store.set('ap.presenting', false);
 if('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
