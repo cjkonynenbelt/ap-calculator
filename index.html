@@ -95,6 +95,37 @@ details.more[open] summary{margin-bottom:8px}
 .aprate span{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--slate);font-size:15px}
 .aprate svg{width:16px;height:16px}
 .aprate b{font-size:30px;font-weight:800;color:var(--teal)}
+/* Earnings Calculator */
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tiers button{min-height:88px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tiers button span{font-size:13px;font-weight:700;color:var(--slate)}
+.tiers button b{font-size:30px;font-weight:800;color:var(--ink);line-height:1.1}
+.tiers button small{font-size:11px;color:var(--muted);font-weight:600}
+.tiers button.on{background:var(--teal);border-color:var(--teal);box-shadow:0 4px 14px rgba(58,134,168,.3)}
+.tiers button.on span,.tiers button.on b,.tiers button.on small{color:#fff}
+.flow{display:flex;flex-direction:column}
+.fstep{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:rgba(255,255,255,.06);border-radius:12px;padding:12px 14px}
+.fstep span{font-size:14px;color:var(--faint);font-weight:600}
+.fstep b{font-size:22px;font-weight:800;white-space:nowrap}
+.farrow{text-align:center;color:var(--teal2);font-size:17px;line-height:1;padding:5px 0}
+.earnhero{background:rgba(78,205,196,.14);border-radius:16px;padding:18px 14px;text-align:center}
+.earnhero .k{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:#a6ece6}
+.earnhero .v{font-size:52px;font-weight:800;color:var(--mint);line-height:1.05;margin-top:8px}
+.earnhero .v2{font-size:30px;font-weight:800;margin-top:6px}
+.earnhero small{font-size:16px;color:var(--faint);font-weight:700;margin-left:3px;letter-spacing:0}
+.wt{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+.wt th{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:6px 4px 8px;text-align:right;line-height:1.3}
+.wt th:first-child,.wt td:first-child{text-align:left}
+.wt td{padding:12px 4px;border-top:1px solid var(--line);text-align:right;font-weight:600}
+.wt td:first-child{font-weight:700;color:var(--slate)}
+.wt .sel{background:#eef8f7;color:#127a6e;font-weight:800}
+.wt th.sel{background:#eef8f7;color:#127a6e;border-radius:8px 8px 0 0}
+.wt tr.cur td:first-child{color:var(--teal)}
+.goalres{margin-top:12px;background:var(--bg);border-radius:14px;padding:16px 14px;text-align:center}
+.goalres .k{font-size:14px;color:var(--slate)}
+.goalres .v{font-size:38px;font-weight:800;color:var(--teal);margin:6px 0 2px}
+.goalres .s{font-size:13px;color:var(--muted);font-weight:600}
+.goalres .others{font-size:13px;color:var(--slate);margin-top:8px}
 .warn{margin-top:10px;background:rgba(251,133,0,.16);color:#ffd19a;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600}
 .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 12px}
 .btn{flex:1;min-width:120px;padding:14px;border-radius:13px;font-weight:700;font-size:15px;background:#fff;border:1.5px solid var(--line);color:var(--ink);text-align:center}
@@ -318,6 +349,7 @@ details.more[open] summary{margin-bottom:8px}
       <button data-tab="calc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 19h2M12 19h2M16 15v4"/></svg>Calculator</button>
       <button data-tab="pres"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/></svg>Presentation</button>
       <button data-tab="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Prospects</button>
+      <button data-tab="earn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9.2c-.6-1-1.7-1.5-3-1.5-1.8 0-3 .9-3 2.2 0 3 6 1.6 6 4.4 0 1.3-1.3 2.2-3 2.2-1.4 0-2.6-.6-3.1-1.6M12 6v1.7M12 16.3V18"/></svg>Earnings</button>
       <button data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
     </nav>
   </div>
@@ -716,11 +748,114 @@ function renderSettings(){
     <p class="help" style="margin:0 2px">Open in Safari → Share → <b>Add to Home Screen</b>. Once loaded, the presentation needs no internet connection.</p></div>`;
 }
 
+/* ---------- TAB: Earnings Calculator (private — never shown in Presentation Mode) ---------- */
+const EARN_TIERS = [{id:1, pct:30}, {id:2, pct:40}, {id:3, pct:50}];
+const EARN_STD_COST = '2.00', EARN_STD_MARGIN = '0.65';
+const EARN_DEFAULTS = {volume:'100,000', cost:EARN_STD_COST, margin:EARN_STD_MARGIN, tier:1, goal:'1000', goalCustom:''};
+const EARN_GOALS = [500, 1000, 2000, 5000];
+const EARN_WHATIF = [25000, 50000, 100000, 250000, 500000, 1000000];
+S.e = Object.assign({}, EARN_DEFAULTS, store.get('ap.earn', {}));
+function saveEarn(){ store.set('ap.earn', S.e); }
+const tierPct = id => (EARN_TIERS.find(t => t.id === id) || EARN_TIERS[0]).pct;
+const stdMargin = cost => Math.round((AP_RATE - n(cost)) * 10000) / 10000;   // 2.65 − cost
+const marginIsStandard = () => Math.abs(n(S.e.margin) - stdMargin(S.e.cost)) < 0.00005;
+function earnCalc(){
+  const vol = n(S.e.volume), margin = n(S.e.margin), pct = tierPct(S.e.tier);
+  const avail = vol * margin / 100, monthly = avail * pct / 100;
+  return {vol, margin, pct, avail, monthly, annual: monthly * 12};
+}
+const earnGoal = () => S.e.goal === 'custom' ? n(S.e.goalCustom) : n(S.e.goal);
+// volume needed so that volume × margin% × tier% = goal
+const volumeFor = (goal, margin, pct) => margin > 0 && pct > 0 ? Math.ceil(goal / (margin / 100 * pct / 100)) : 0;
+const earnMoney = v => money(v, Math.abs(Math.round(v * 100) - Math.round(v) * 100) > 0);   // cents only when there are any
+const tableMoney = v => money(v, Math.abs(v) < 100 && Math.abs(Math.round(v * 100) - Math.round(v) * 100) > 0);
+const shortMoney = v => v >= 1e6 ? '$' + (v / 1e6).toLocaleString('en-US', {maximumFractionDigits:1}) + 'M' : '$' + (v / 1000).toLocaleString('en-US') + 'K';
+
+function eField(k, label, unit, opt={}){
+  return `<label class="field ${opt.big?'big':''}"><span class="flabel">${label}</span>
+    <span class="finput">${unit==='$'?'<i>$</i>':''}<input data-e="${k}" data-u="${unit}" type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(S.e[k])}" placeholder="${opt.ph||'0'}">${unit==='%'?'<i>%</i>':''}</span></label>`;
+}
+// Called on every keystroke and again when a field loses focus. Card cost and margin stay linked
+// (margin = 2.65% − cost) until the margin is typed to something else.
+function earnInput(t){
+  const k = t.dataset.e;
+  S.e[k] = t.value;
+  if(k === 'cost' && S.e._linked !== false){
+    const m = blank(t.value) ? '' : stdMargin(t.value).toFixed(2);
+    S.e.margin = m;
+    const mi = $('input[data-e="margin"]'); if(mi && document.activeElement !== mi) mi.value = m;
+  }
+  if(k === 'margin') S.e._linked = marginIsStandard();
+  saveEarn(); updateEarn();
+}
+
+function renderEarn(keepScroll){
+  const y = window.scrollY, e = S.e;
+  if(e._linked === undefined) e._linked = marginIsStandard();
+  let h = `<div class="h1">Earnings Calculator</div>
+    <p class="help" style="margin:-4px 2px 14px">Private — shows what a salesperson could earn from the processing they bring in.</p>`;
+  h += `<div class="card"><h3>ActivityPay economics <span class="tag badge">Fixed</span></h3>
+    <div class="aprate"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>ActivityPay rate</span><b class="num">${AP_RATE.toFixed(2)}%</b></div></div>`;
+  h += `<div class="card"><h3>Monthly processing</h3>${eField('volume','Monthly processing volume','$',{big:true})}</div>`;
+  h += `<div class="card"><h3>Modeling assumptions <span class="tag badge confirm">Editable</span></h3>
+    <div class="grid2">${eField('cost','Card / interchange cost','%',{big:true,ph:'2.00'})}${eField('margin','Commissionable margin','%',{big:true,ph:'0.65'})}</div>
+    <p class="help" data-eo="marginNote"></p></div>`;
+  h += `<div class="card"><h3>Your tier</h3><div class="tiers">${EARN_TIERS.map(t => `
+    <button data-tier="${t.id}" class="${e.tier===t.id?'on':''}" aria-pressed="${e.tier===t.id}"><span>Tier ${t.id}</span><b>${t.pct}%</b><small>of margin</small></button>`).join('')}</div></div>`;
+  h += `<div class="card results"><h3>Your estimated earnings</h3><div class="flow">
+    <div class="fstep"><span>Monthly processing</span><b class="num" data-eo="vol">—</b></div><div class="farrow">↓</div>
+    <div class="fstep"><span>Commissionable margin</span><b class="num" data-eo="margin">—</b></div><div class="farrow">↓</div>
+    <div class="fstep"><span>Available margin</span><b class="num" data-eo="avail">—</b></div><div class="farrow">↓</div>
+    <div class="fstep"><span>Your tier</span><b data-eo="tier">—</b></div><div class="farrow">↓</div>
+    <div class="earnhero"><div class="k">Your estimated earnings</div>
+      <div class="v num"><span data-eo="monthly">—</span><small>/month</small></div>
+      <div class="v2 num"><span data-eo="annual">—</span><small>/year</small></div></div>
+    </div><div data-eo="warn"></div></div>`;
+  h += `<div class="card"><h3>What if?</h3><p class="help" style="margin:0 2px 8px">Estimated monthly earnings at a <b data-eo="whatifMargin"></b> commissionable margin.</p>
+    <table class="wt"><thead><tr><th>Monthly processing</th>${EARN_TIERS.map(t => `<th class="${e.tier===t.id?'sel':''}">Tier ${t.id}<br>${t.pct}%</th>`).join('')}</tr></thead>
+    <tbody data-eo="whatif"></tbody></table></div>`;
+  h += `<div class="card"><h3>How much processing do I need?</h3>
+    <p class="help" style="margin:0 2px 8px">Pick a monthly earnings goal.</p>
+    <div class="chips">${EARN_GOALS.map(g => `<button class="chip ${e.goal===String(g)?'on':''}" data-goal="${g}">${money(g)}/mo</button>`).join('')}<button class="chip ${e.goal==='custom'?'on':''}" data-goal="custom">Custom</button></div>
+    ${e.goal==='custom' ? eField('goalCustom','Custom monthly earnings goal','$',{ph:'1,500'}) : ''}
+    <div class="goalres"><div class="k" data-eo="goalLabel"></div><div class="v num" data-eo="need">—</div><div class="s">in monthly card processing</div><div class="others" data-eo="needOthers"></div></div></div>`;
+  h += `<p class="help" style="margin:4px 4px 0">Estimates for illustration only. Actual earnings depend on your agreement with ActivityPay and on real card costs.</p>`;
+  $('#view').innerHTML = h;
+  updateEarn();
+  if(keepScroll) window.scrollTo(0, y);
+}
+
+function updateEarn(){
+  if(S.tab !== 'earn') return;
+  const e = S.e, c = earnCalc(), set = (k, v, html) => $$(`[data-eo="${k}"]`).forEach(el => html ? el.innerHTML = v : el.textContent = v);
+  set('vol', money(c.vol));
+  set('margin', c.margin.toFixed(2) + '%');
+  set('avail', earnMoney(c.avail));
+  set('tier', `Tier ${e.tier} — ${c.pct}%`);
+  set('monthly', earnMoney(c.monthly));
+  set('annual', earnMoney(c.annual));
+  set('whatifMargin', c.margin.toFixed(2) + '%');
+  const sm = stdMargin(e.cost);
+  set('marginNote', e._linked
+    ? `${e.cost === EARN_STD_COST && e.margin === EARN_STD_MARGIN ? '<b>Standard default.</b> ' : ''}Margin = ${AP_RATE.toFixed(2)}% − ${n(e.cost).toFixed(2)}% = <b>${sm.toFixed(2)}%</b>. Changing the card cost updates it automatically.`
+    : `<b>Custom margin.</b> The standard would be ${AP_RATE.toFixed(2)}% − ${n(e.cost).toFixed(2)}% = ${sm.toFixed(2)}%.`, true);
+  const note = $('[data-eo="marginNote"]');
+  if(note && !(e.cost === EARN_STD_COST && e.margin === EARN_STD_MARGIN && e._linked))
+    note.insertAdjacentHTML('beforeend', ` <button class="linkbtn" data-act="earnReset">Reset to standard (2.00% / 0.65%)</button>`);
+  set('warn', c.margin <= 0 ? '<div class="warn">The commissionable margin is zero or negative, so there are no earnings to calculate.</div>' : '', true);
+  set('whatif', EARN_WHATIF.map(v => `<tr class="${v === c.vol ? 'cur' : ''}"><td>${shortMoney(v)}</td>${EARN_TIERS.map(t =>
+    `<td class="${e.tier===t.id?'sel':''}">${tableMoney(v * c.margin / 100 * t.pct / 100)}</td>`).join('')}</tr>`).join(''), true);
+  const goal = earnGoal(), need = volumeFor(goal, c.margin, c.pct);
+  set('goalLabel', goal > 0 ? `To earn <b>${earnMoney(goal)}/month</b> at Tier ${e.tier} (${c.pct}%), you need about` : 'Enter a monthly earnings goal', true);
+  set('need', goal > 0 && need ? money(need) : '—');
+  set('needOthers', goal > 0 && c.margin > 0 ? EARN_TIERS.filter(t => t.id !== e.tier).map(t => `Tier ${t.id}: ${money(volumeFor(goal, c.margin, t.pct))}`).join(' · ') : '');
+}
+
 /* ---------- tab routing ---------- */
 function go(tab){
   S.tab = tab; store.set('ap.tab', tab);
   $$('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  ({calc:renderCalc, pres:renderPres, list:renderList, set:renderSettings})[tab]();
+  ({calc:renderCalc, pres:renderPres, list:renderList, earn:renderEarn, set:renderSettings})[tab]();
   $('#showBtn').hidden = !(tab === 'calc' || tab === 'pres');
   window.scrollTo(0, 0);
 }
@@ -732,6 +867,8 @@ view.addEventListener('input', e => {
   if(t.dataset.k){
     S.p[t.dataset.k] = t.type === 'checkbox' ? t.checked : t.value;
     touch(); updateResults();
+  } else if(t.dataset.e){
+    earnInput(t);
   } else if(t.dataset.s !== undefined){
     let v = t.value; if(t.dataset.s === 'pin'){ v = v.replace(/\D/g,'').slice(0,4); t.value = v; }
     S.settings[t.dataset.s] = v; store.set('ap.settings', S.settings);
@@ -759,8 +896,15 @@ view.addEventListener('change', e => {
 // Raw text is kept while typing; tidy formatting only happens when the field loses focus.
 view.addEventListener('focusout', e => {
   const t = e.target, u = t.dataset.u;
+  if(t.dataset.e && u){ tidyNumber(t); earnInput(t); return; }            // Earnings tab fields
   if(!t.dataset.k || !u) return;
   if(t.value.trim() === ''){ if(S.p[t.dataset.k] !== ''){ S.p[t.dataset.k] = ''; touch(); updateResults(); } return; }
+  tidyNumber(t);
+  S.p[t.dataset.k] = t.value; touch(); updateResults();
+});
+function tidyNumber(t){
+  const u = t.dataset.u;
+  if(t.value.trim() === '') return;
   const v = n(t.value);
   if(u === '#') t.value = Math.round(v).toLocaleString('en-US');
   else if(u === '%'){                                                       // keep as typed: "3.25%" → "3.25", "3,25" → "3.25", "1.80" stays
@@ -769,16 +913,18 @@ view.addEventListener('focusout', e => {
   }
   else t.value = Number.isInteger(v) ? v.toLocaleString('en-US')           // 50000 → "50,000"
     : v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); // .1 → "0.10"
-  S.p[t.dataset.k] = t.value; touch(); updateResults();
-});
+}
 view.addEventListener('keydown', e => {
-  if(e.key === 'Enter' && e.target.matches('input[data-k]')){
-    e.preventDefault(); const ins = $$('input[data-k]:not([type=checkbox])', view).filter(x => x === e.target || !x.closest('details:not([open])')); const i = ins.indexOf(e.target);
+  if(e.key === 'Enter' && e.target.matches('input[data-k], input[data-e]')){
+    e.preventDefault(); const ins = $$('input[data-k]:not([type=checkbox]), input[data-e]', view).filter(x => x === e.target || !x.closest('details:not([open])')); const i = ins.indexOf(e.target);
     if(ins[i+1]) ins[i+1].focus(); else e.target.blur();
   }
 });
 view.addEventListener('click', async e => {
-  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter]'); if(!b) return;
+  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal]'); if(!b) return;
+  if(b.dataset.tier){ S.e.tier = +b.dataset.tier; saveEarn(); renderEarn(true); return; }
+  if(b.dataset.goal){ S.e.goal = b.dataset.goal; saveEarn(); renderEarn(true);
+    if(b.dataset.goal === 'custom'){ const c = $('input[data-e="goalCustom"]'); if(c) c.focus(); } return; }
   if(b.dataset.mode){
     if(b.dataset.mode === S.p.mode) return;
     // carry the flat rate / per-transaction / monthly fee across if the other side is still empty
@@ -805,6 +951,7 @@ view.addEventListener('click', async e => {
   }
   else if(a === 'report') openReport();
   else if(a === 'featNone'){ S.p.features = []; touch(); renderPres(); }
+  else if(a === 'earnReset'){ S.e.cost = EARN_STD_COST; S.e.margin = EARN_STD_MARGIN; S.e._linked = true; saveEarn(); renderEarn(true); }
   else if(a === 'resetDisc'){ S.settings.disclaimer = DEFAULT_DISCLAIMER; store.set('ap.settings', S.settings); renderSettings(); }
   else if(a === 'export') exportBackup();
   else if(a === 'import') $('#importFile').click();
