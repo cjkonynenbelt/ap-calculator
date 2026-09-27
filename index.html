@@ -287,6 +287,11 @@ details.more[open] summary{margin-bottom:8px}
 .pinpad .pd{display:flex;gap:14px}
 .pinpad .pd i{width:14px;height:14px;border-radius:50%;border:2px solid #8ea3b3}
 .pinpad .pd i.f{background:#fff;border-color:#fff}
+.pinpad .pinerr{min-height:20px;margin-top:-10px;font-size:14px;font-weight:700;color:#ffb35c}
+.pres.locked .hide-btn{color:rgba(255,255,255,.45);background:rgba(255,255,255,.05);border-color:transparent;font-weight:600}
+.lockset{margin-top:6px}
+.lockerr{min-height:18px;margin:6px 2px 0;font-size:13px;font-weight:700;color:var(--danger)}
+html[data-theme="dark"] .lockerr{color:#ff8a7a}
 .pinpad .keys{display:grid;grid-template-columns:repeat(3,72px);gap:14px}
 .pinpad .keys button{height:72px;border-radius:50%;background:rgba(255,255,255,.08);font-size:26px;font-weight:600}
 .pinpad .keys button.txt{font-size:14px;background:none}
@@ -339,17 +344,20 @@ details.more[open] summary{margin-bottom:8px}
 .rp-rep{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px;font-size:13px;color:var(--slate)}
 @media (max-width:520px){.rp-call{grid-template-columns:1fr;gap:8px}.rp-call div div{margin:0}.rp-call>div{display:flex;justify-content:space-between;align-items:center;padding:12px 14px}.rp-call .v{margin:0;font-size:22px}.rp-feats{columns:1}.rp-head,.rp-body{padding-left:18px;padding-right:18px}}
 /* ============ PRESENTATION ORDER (rep only) ============ */
-.orow .drag{flex:none;width:34px;height:44px;margin:-6px 0 -6px -6px;display:grid;place-items:center;color:var(--faint);font-size:20px;touch-action:none;cursor:grab}
-.orow .omove{flex:none;display:flex;gap:4px}
-.orow .omove button{width:32px;height:32px;border-radius:9px;background:var(--bg);border:1px solid var(--line);color:var(--slate);font-size:15px;font-weight:700}
-.orow .omove button:disabled{opacity:.3}
-.orow.dragging{background:var(--bg);border-radius:12px;box-shadow:0 6px 18px rgba(12,30,45,.18);position:relative;z-index:2;user-select:none;-webkit-user-select:none}
-.orow.dragging .drag{cursor:grabbing;color:var(--teal)}
-/* small iPhones (SE / mini): stack the arrows and tighten the long earnings table so nothing spills */
+.olist{position:relative}
+.orow{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;background:var(--card);transition:background .15s}
+.orow .grip{flex:none;width:26px;height:40px;margin:-4px -2px -4px -6px;display:grid;place-items:center;color:var(--faint);touch-action:none}
+.orow .grip svg{width:18px;height:18px}
+.orow .on-n{color:var(--faint);font-weight:700;margin-right:2px}
+.orow.off .t,.orow.off .s{opacity:.5}
+.orow .skip{font-size:12px;font-weight:600;color:#b25f00;margin-top:3px}
+html[data-theme="dark"] .orow .skip{color:#f5b95c}
+.orow.pressing{background:var(--bg)}
+.orow.dragging{position:relative;z-index:3;cursor:grabbing;background:var(--card);border-radius:12px;border-bottom-color:transparent;box-shadow:0 10px 26px rgba(12,30,45,.22),0 0 0 1.5px var(--teal)}
+.orow.dragging .grip{color:var(--teal)}
+body.dragging-order,body.dragging-order *{cursor:grabbing!important}
+/* small iPhones (SE / mini): tighten the long earnings table so nothing spills */
 @media (max-width:374px){
-  .orow{gap:8px}
-  .orow .omove{flex-direction:column;gap:3px}
-  .orow .omove button{width:30px;height:26px;font-size:13px}
   .wt.sm{font-size:11.5px}
   .wt.sm th{font-size:9px;letter-spacing:0}
   .wt.sm td{padding:8px 2px}
@@ -386,7 +394,7 @@ html[data-theme="dark"] #modal{background:rgba(0,0,0,.6)}
 html[data-theme="dark"] #report{background:#08131c}
 /* the report is a white document (printed / shared), so it keeps the light colours */
 html[data-theme="dark"] .paper{color-scheme:light;--ink:#1c2b39;--slate:#3d5568;--muted:#6b7a8d;--faint:#8fa5b5;--line:#e3e9ef;--bg:#f4f8fb;--card:#fff}
-html[data-theme="dark"] .orow.dragging{box-shadow:0 6px 18px rgba(0,0,0,.5)}
+html[data-theme="dark"] .orow.dragging{box-shadow:0 10px 26px rgba(0,0,0,.55),0 0 0 1.5px var(--teal2)}
 
 @media print{
   @page{margin:12mm}
@@ -529,7 +537,16 @@ const PROSPECT_NUM_KEYS = ['volume','txns','avgTicket','qRate','qTxnFee','qMonth
 
 const DEFAULT_DISCLAIMER = 'Estimates are based on the information provided and are for illustration only. They are not a quote, offer, or guarantee of pricing or savings. Actual costs depend on factors including card mix, transaction volume, average ticket, underwriting approval, and final pricing.';
 const DEFAULT_SETTINGS = {repName:'', repTitle:'ActivityPay Representative', repPhone:'', repEmail:'',
-  pin:'', disclaimer:DEFAULT_DISCLAIMER};
+  lockOn:false, pinHash:'', disclaimer:DEFAULT_DISCLAIMER};
+// Presentation Lock: OFF unless the rep turns it on and sets a PIN. Only a hash of the PIN is kept on this device —
+// the PIN itself is never stored, shown, or put in the page, URL, or presentation.
+const pinHash = pin => { let h = 0x811c9dc5; for(const ch of 'ap-presentation-lock:' + pin){ h ^= ch.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16); };
+function normalizeLock(s){
+  delete s.pin;                                   // older versions kept a plain-text code; it is removed and the lock starts OFF
+  if(typeof s.pinHash !== 'string' || !/^[0-9a-f]{1,8}$/.test(s.pinHash)) s.pinHash = '';
+  s.lockOn = !!s.lockOn && !!s.pinHash;
+  return s;
+}
 
 /* ---------- storage ---------- */
 const store = {
@@ -617,12 +634,13 @@ function calc(p){
 
 /* ---------- state ---------- */
 const S = {
-  settings: Object.assign({}, DEFAULT_SETTINGS, store.get('ap.settings', {})),
+  settings: normalizeLock(Object.assign({}, DEFAULT_SETTINGS, store.get('ap.settings', {}))),
   prospects: store.get('ap.prospects', []),
   p: store.get('ap.current', null) || newProspect(),
   tab: store.get('ap.tab', 'calc'),
   filter: 'All', q: '',
 };
+if('pin' in store.get('ap.settings', {})) store.set('ap.settings', S.settings);   // wipe an old plain-text code from storage
 // fill any keys added in later versions
 (function migrate(){ const base = newProspect(); for(const k in base) if(!(k in S.p)) S.p[k] = base[k];
   SLIDES.forEach(s => { if(!(s.id in S.p.slides)) S.p.slides[s.id] = s.def; });
@@ -767,38 +785,62 @@ function updateResults(){
   fitRep();
 }
 
-/* ---------- presentation order (rep's choice, saved on this device) ---------- */
-const DEFAULT_ORDER = SLIDES.map(s => s.id);
-function loadOrder(){
-  const saved = store.get('ap.slideOrder', []), ids = [];
-  (Array.isArray(saved) ? saved : []).forEach(id => { if(DEFAULT_ORDER.includes(id) && !ids.includes(id)) ids.push(id); });
-  DEFAULT_ORDER.forEach(id => { if(!ids.includes(id)) ids.push(id); });   // screens added in later versions
-  return ids;
+/* ---------- presentation setup: the ONE saved source of truth ----------
+   S.pres = {order:[screen ids], on:{screen id: bool}, lines:{savings line id: bool}}, saved as 'ap.presCfg'.
+   The Presentation tab edits it; Presentation Mode reads it fresh every time it opens.
+   (Older versions kept a copy per prospect, so opening/creating a prospect silently reset the switches.) */
+// Default sales flow: situation → cost → ActivityPay cost → savings → how it helps → capabilities → close
+const DEFAULT_ORDER = ['intro','current','rate','ap','savings','compare','annual','funding','chargeback','surcharge','features','summary'];
+const OLD_DEFAULT_ORDER = SLIDES.map(s => s.id);
+function loadPresCfg(){
+  const saved = store.get('ap.presCfg', null);
+  const base = saved || {order:store.get('ap.slideOrder', []), on:S.p.slides || {}, lines:S.p.lines || {}};   // first run: carry over current choices
+  let order = [];
+  (Array.isArray(base.order) ? base.order : []).forEach(id => { if(DEFAULT_ORDER.includes(id) && !order.includes(id)) order.push(id); });
+  if(!saved && order.join() === OLD_DEFAULT_ORDER.join()) order = [];   // never customised → use the new default flow
+  DEFAULT_ORDER.forEach(id => { if(!order.includes(id)) order.push(id); });
+  const on = {}, lines = {};
+  SLIDES.forEach(s => on[s.id] = typeof (base.on || {})[s.id] === 'boolean' ? base.on[s.id] : s.def);
+  LINES.forEach(l => lines[l.id] = typeof (base.lines || {})[l.id] === 'boolean' ? base.lines[l.id] : l.def);
+  return {order, on, lines};
 }
-S.order = loadOrder();
-function saveOrder(ids){ S.order = ids; store.set('ap.slideOrder', ids); }
+function savePresCfg(){ store.set('ap.presCfg', S.pres); }
+S.pres = loadPresCfg(); savePresCfg();
+
+// Why a screen that is switched ON still won't appear for this prospect ('' = it will appear).
+function slideSkipReason(id, c, p){
+  const pos = c.monthly > 0.5;
+  if((id === 'savings' || id === 'compare' || id === 'annual') && !pos)
+    return c.curTotal && c.apTotal ? 'Skipped for this prospect — no savings at these numbers' : 'Appears once current costs and volume are entered';
+  if(id === 'savings' && !LINES.some(l => S.pres.lines[l.id] && (l.id !== 'yN' || yearsOver(c.annual) <= MULTI_YEAR_MAX)))
+    return 'Skipped — turn on at least one savings line below';
+  if(id === 'features' && !p.features.length) return 'Skipped — select capabilities below';
+  return '';
+}
+const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
 
 /* ---------- TAB: presentation setup ---------- */
-function renderPres(){
-  const p = S.p, c = calc(p);
-  const on = SLIDES.filter(s => p.slides[s.id]).length, last = S.order.length - 1;
+function renderPres(keepScroll){
+  const y = window.scrollY, p = S.p, c = calc(p), cfg = S.pres;
+  const on = SLIDES.filter(s => cfg.on[s.id]).length;
   let h = `<div class="h1">What the customer sees</div>
     <p class="help" style="margin:-4px 2px 14px">Choose the screens for <b>${esc(p.business || 'this prospect')}</b>. Notes, status, pricing assumptions and other prospects never appear in the presentation.</p>`;
-  h += `<div class="card"><h3>Screens <span class="tag">${on} selected</span></h3>
-    <p class="help" style="margin:0 2px 6px">Presentation order: drag <b>☰</b> or use the arrows to rearrange.</p>
-    <div class="olist">${S.order.map((id,i) => { const s = SLIDES.find(x => x.id === id); return `
-    <div class="row orow" data-id="${id}"><span class="drag" aria-hidden="true">☰</span><div class="grow"><div class="t">${i+1}. ${s.label}</div><div class="s">${s.s}</div></div>
-      <span class="omove"><button data-move="${id}" data-dir="-1" aria-label="Move ${s.label} up" ${i===0?'disabled':''}>↑</button><button data-move="${id}" data-dir="1" aria-label="Move ${s.label} down" ${i===last?'disabled':''}>↓</button></span>
-      ${sw(`data-slide="${s.id}"`, p.slides[s.id])}</div>`; }).join('')}</div>
+  h += `<div class="card"><h3>Presentation order <span class="tag">${on} on</span></h3>
+    <p class="help" style="margin:0 2px 6px">Press and hold a screen, then drag it to a new position. <b>On</b> = it appears in the presentation. <b>Off</b> = it doesn’t.</p>
+    <div class="olist">${cfg.order.map((id,i) => { const s = SLIDES.find(x => x.id === id), isOn = cfg.on[id], skip = isOn ? slideSkipReason(id, c, p) : ''; return `
+    <div class="row orow ${isOn?'':'off'}" data-id="${id}"><span class="grip" aria-hidden="true">${GRIP}</span>
+      <div class="grow"><div class="t"><span class="on-n">${i+1}.</span> ${s.label}</div><div class="s">${s.s}</div>${skip ? `<div class="skip">${skip}</div>` : ''}</div>
+      ${sw(`data-slide="${s.id}" aria-label="Show ${s.label}"`, isOn)}</div>`; }).join('')}</div>
     <button class="linkbtn" data-act="orderReset">Reset to default order</button></div>`;
   h += `<div class="card"><h3>On the savings screen</h3>${LINES.map(l => `
     <div class="row"><div class="grow"><div class="t">${l.label}</div><div class="s">${c.monthly > 0 ? (l.id==='m' ? money(c.monthly) : l.id==='y' ? money(c.annual)
-      : (N => N > MULTI_YEAR_MAX ? `Not shown — would take ${N} years` : `${money(c.annual*N)} over ${N} years`)(yearsOver(c.annual))) : '—'}</div></div>${sw(`data-line="${l.id}"`, p.lines[l.id])}</div>`).join('')}</div>`;
+      : (N => N > MULTI_YEAR_MAX ? `Not shown — would take ${N} years` : `${money(c.annual*N)} over ${N} years`)(yearsOver(c.annual))) : '—'}</div></div>${sw(`data-line="${l.id}" aria-label="${l.label}"`, cfg.lines[l.id])}</div>`).join('')}</div>`;
   h += `<div class="card"><h3>ActivityPay capabilities <span class="tag">${p.features.length} selected</span></h3>
     <p class="help" style="margin:0 2px 6px">Only selected items are shown. <span class="badge">On website</span> = described on activitypay.co. <span class="badge confirm">Confirm first</span> = not on the public site; confirm availability for this merchant before selecting.</p>
     ${FEATURES.map(f => `<div class="row"><div class="grow"><div class="t">${f.t} <span class="badge ${f.verified?'':'confirm'}">${f.verified?'On website':'Confirm first'}</span></div><div class="s">${f.d}</div></div>${sw(`data-feat="${f.id}"`, p.features.includes(f.id))}</div>`).join('')}
     <div class="btnrow" style="margin:10px 0 0"><button class="btn" data-act="featNone">Clear all</button></div></div>`;
   $('#view').innerHTML = h;
+  if(keepScroll) window.scrollTo(0, y);
 }
 
 /* ---------- TAB: prospects ---------- */
@@ -819,8 +861,8 @@ function renderList(){
 }
 
 /* ---------- TAB: settings ---------- */
-function renderSettings(){
-  const s = S.settings, f = (k, label, ph, opt={}) => `<label class="field"><span class="flabel">${label}</span><span class="finput">${opt.pre?`<i>${opt.pre}</i>`:''}<input data-s="${k}" value="${esc(s[k])}" placeholder="${esc(ph||'')}" ${opt.im?`inputmode="${opt.im}"`:''} ${opt.type?`type="${opt.type}"`:''} autocomplete="off">${opt.post?`<i>${opt.post}</i>`:''}</span></label>`;
+function renderSettings(keepScroll){
+  const y = window.scrollY, s = S.settings, f = (k, label, ph, opt={}) => `<label class="field"><span class="flabel">${label}</span><span class="finput">${opt.pre?`<i>${opt.pre}</i>`:''}<input data-s="${k}" value="${esc(s[k])}" placeholder="${esc(ph||'')}" ${opt.im?`inputmode="${opt.im}"`:''} ${opt.type?`type="${opt.type}"`:''} autocomplete="off">${opt.post?`<i>${opt.post}</i>`:''}</span></label>`;
   const th = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   $('#view').innerHTML = `<div class="h1">Settings</div>
   <div class="card"><h3>Appearance</h3>
@@ -831,9 +873,16 @@ function renderSettings(){
   <div class="card"><h3>ActivityPay pricing <span class="tag badge">Fixed</span></h3>
     <div class="aprate"><span>ActivityPay rate</span><b class="num">${AP_RATE.toFixed(2)}%</b></div>
     <p class="help">Every ActivityPay estimate is calculated at ${AP_RATE.toFixed(2)}% of monthly card volume. This can’t be changed in the app.</p></div>
-  <div class="card"><h3>Presentation lock</h3>
-    ${f('pin','4-digit code to leave customer view (optional)','None',{im:'numeric'})}
-    <p class="help">To leave the customer view, tap “Exit” (top right) or “Done” on the last screen, then confirm. Add a code for extra protection.</p></div>
+  <div class="card"><h3>Presentation Lock</h3>
+    <div class="row" style="padding-top:0"><div class="grow"><div class="t">Presentation Lock</div>
+      <div class="s">${s.lockOn ? '<b>On</b> — a 4-digit PIN is needed to leave the customer view.' : '<b>Off</b> — tap “Exit” or “Done” in the customer view, then confirm.'}</div></div>
+      ${sw('data-lock="1" aria-label="Presentation Lock"', s.lockOn || S.lockSetup)}</div>
+    ${S.lockSetup ? `<div class="lockset">
+      <div class="grid2">${pinField('1', s.lockOn ? 'New 4-digit PIN' : 'Set Presentation PIN')}${pinField('2', 'Confirm PIN')}</div>
+      <div class="lockerr" id="lockErr"></div>
+      <div class="btnrow" style="margin:8px 0 0"><button class="btn" data-act="lockCancel">Cancel</button><button class="btn primary" data-act="lockSave">Save PIN</button></div></div>`
+    : s.lockOn ? `<button class="linkbtn" data-act="lockChange">Change PIN</button>` : ''}
+    <p class="help">Only exiting the customer view is protected. The calculators, Earnings and Settings never ask for the PIN.</p></div>
   <div class="card"><h3>Disclaimer (customer report)</h3>
     <textarea class="notes" data-s="disclaimer">${esc(s.disclaimer)}</textarea>
     <button class="linkbtn" data-act="resetDisc">Reset to default wording</button></div>
@@ -843,6 +892,24 @@ function renderSettings(){
     <input type="file" id="importFile" accept="application/json,.json" hidden></div>
   <div class="card"><h3>Install on iPhone</h3>
     <p class="help" style="margin:0 2px">Open in Safari → Share → <b>Add to Home Screen</b>. Once loaded, the presentation needs no internet connection.</p></div>`;
+  if(keepScroll) window.scrollTo(0, y);
+}
+const pinField = (n, label) => `<label class="field"><span class="flabel">${label}</span><span class="finput"><input data-pin="${n}" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="••••" aria-label="${label}"></span></label>`;
+function lockSwitch(on){
+  if(on){ S.lockSetup = true; renderSettings(true); const f = $('input[data-pin="1"]'); if(f) f.focus(); return; }
+  S.lockSetup = false;
+  if(S.settings.lockOn){ S.settings.lockOn = false; S.settings.pinHash = ''; store.set('ap.settings', S.settings); toast('Presentation Lock turned off'); }
+  renderSettings(true);
+}
+function lockSave(){
+  const a = ($('input[data-pin="1"]') || {}).value || '', b = ($('input[data-pin="2"]') || {}).value || '', err = $('#lockErr');
+  const fail = m => { if(err) err.textContent = m; };
+  if(!/^\d{4}$/.test(a)) return fail('Enter a 4-digit PIN.');
+  if(a !== b) return fail('The two PINs don’t match. Try again.');
+  S.settings.pinHash = pinHash(a); S.settings.lockOn = true; S.lockSetup = false;
+  store.set('ap.settings', S.settings);
+  if(document.activeElement) document.activeElement.blur();
+  renderSettings(true); toast('Presentation Lock is on');
 }
 
 /* ---------- TAB: Earnings Calculator (private — never shown in Presentation Mode) ---------- */
@@ -1009,26 +1076,28 @@ view.addEventListener('input', e => {
     touch(); updateResults();
   } else if(t.dataset.e){
     earnInput(t);
+  } else if(t.dataset.pin){
+    t.value = t.value.replace(/\D/g,'').slice(0,4);                         // PIN setup fields: digits only, never stored as typed
   } else if(t.dataset.s !== undefined){
-    let v = t.value; if(t.dataset.s === 'pin'){ v = v.replace(/\D/g,'').slice(0,4); t.value = v; }
-    S.settings[t.dataset.s] = v; store.set('ap.settings', S.settings);
+    S.settings[t.dataset.s] = t.value; store.set('ap.settings', S.settings);
   } else if(t.id === 'pSearch'){ S.q = t.value; const pos = t.selectionStart; renderList(); const s = $('#pSearch'); s.focus(); s.setSelectionRange(pos,pos); }
 });
 view.addEventListener('change', e => {
   const t = e.target;
-  if(t.dataset.slide){ S.p.slides[t.dataset.slide] = t.checked; touch(); renderPres(); }
-  else if(t.dataset.line){ S.p.lines[t.dataset.line] = t.checked; touch(); }
+  if(t.dataset.slide){ S.pres.on[t.dataset.slide] = t.checked; savePresCfg(); renderPres(true); }
+  else if(t.dataset.line){ S.pres.lines[t.dataset.line] = t.checked; savePresCfg(); renderPres(true); }
+  else if(t.dataset.lock !== undefined){ lockSwitch(t.checked); }
   else if(t.dataset.feat){
     const f = S.p.features, id = t.dataset.feat, feat = FEATURES.find(x => x.id === id);
     if(t.checked){
       if(!feat.verified){
         ask('Confirm availability', `“${feat.t}” isn’t described on ActivityPay’s public website. Only show it if you’ve confirmed it’s available for this merchant.`, 'Confirmed — show it', 'Cancel')
-          .then(ok => { if(ok){ f.push(id); touch(); } renderPres(); });
+          .then(ok => { if(ok){ f.push(id); touch(); } renderPres(true); });
         return;
       }
       if(!f.includes(id)) f.push(id);
     } else S.p.features = f.filter(x => x !== id);
-    touch(); renderPres();
+    touch(); renderPres(true);
   }
   else if(t.dataset.k === 'status'){ S.p.status = t.value; touch(); }
   else if(t.id === 'importFile') importBackup(t.files[0]);
@@ -1061,15 +1130,8 @@ view.addEventListener('keydown', e => {
   }
 });
 view.addEventListener('click', async e => {
-  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-move],[data-themeset]'); if(!b) return;
+  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-themeset]'); if(!b) return;
   if(b.dataset.themeset){ setTheme(b.dataset.themeset); renderSettings(); return; }
-  if(b.dataset.move){
-    const ids = [...S.order], i = ids.indexOf(b.dataset.move), j = i + +b.dataset.dir;
-    if(i < 0 || j < 0 || j >= ids.length) return;
-    [ids[i], ids[j]] = [ids[j], ids[i]]; saveOrder(ids); renderPres();
-    const again = $(`[data-move="${ids[j]}"][data-dir="${b.dataset.dir}"]`) || $(`[data-move="${ids[j]}"]`); if(again && !again.disabled) again.focus({preventScroll:true});
-    return;
-  }
   if(b.dataset.projyears){ S.e.projYears = +b.dataset.projyears; saveEarn(); renderEarn(true); return; }
   if(b.dataset.tier){ S.e.tier = +b.dataset.tier; saveEarn(); renderEarn(true); return; }
   if(b.dataset.goal){ S.e.goal = b.dataset.goal; saveEarn(); renderEarn(true);
@@ -1099,10 +1161,13 @@ view.addEventListener('click', async e => {
     S.p = newProspect(); persistCurrent(); renderCalc(); toast('New prospect');
   }
   else if(a === 'report') openReport();
-  else if(a === 'featNone'){ S.p.features = []; touch(); renderPres(); }
+  else if(a === 'featNone'){ S.p.features = []; touch(); renderPres(true); }
   else if(a === 'earnReset'){ S.e.cost = EARN_STD_COST; S.e.margin = EARN_STD_MARGIN; S.e._linked = true; saveEarn(); renderEarn(true); }
   else if(a === 'projReset'){ ['projGp','projNew','projAtt2','projAtt3','projYears'].forEach(k => S.e[k] = EARN_DEFAULTS[k]); saveEarn(); renderEarn(true); }
-  else if(a === 'orderReset'){ saveOrder([...DEFAULT_ORDER]); renderPres(); toast('Default order restored'); }
+  else if(a === 'orderReset'){ S.pres.order = [...DEFAULT_ORDER]; savePresCfg(); renderPres(true); toast('Default order restored'); }
+  else if(a === 'lockSave') lockSave();
+  else if(a === 'lockCancel'){ S.lockSetup = false; renderSettings(true); }
+  else if(a === 'lockChange'){ S.lockSetup = true; renderSettings(true); const f = $('input[data-pin="1"]'); if(f) f.focus(); }
   else if(a === 'resetDisc'){ S.settings.disclaimer = DEFAULT_DISCLAIMER; store.set('ap.settings', S.settings); renderSettings(); }
   else if(a === 'export') exportBackup();
   else if(a === 'import') $('#importFile').click();
@@ -1115,34 +1180,85 @@ async function deleteCurrent(){
 }
 function migrateP(){ const base = newProspect(); for(const k in base) if(!(k in S.p)) S.p[k] = base[k]; }
 
-/* ---------- drag ☰ to reorder presentation screens (mouse + touch) ---------- */
-(function dragOrder(){
-  let d = null, raf = 0;
-  view.addEventListener('pointerdown', e => {
-    const h = e.target.closest('.orow .drag'); if(!h) return;
-    e.preventDefault();
-    const row = h.closest('.orow');
-    d = {row, list:row.parentElement, y:e.clientY};
-    try{ h.setPointerCapture(e.pointerId); }catch(err){}
-    row.classList.add('dragging');
-    const scroll = () => { if(!d) return;                         // auto-scroll near the top / bottom edge
-      const dy = d.y < 90 ? -10 : d.y > innerHeight - 170 ? 10 : 0;
-      if(dy){ window.scrollBy(0, dy); place(); } raf = requestAnimationFrame(scroll); };
-    raf = requestAnimationFrame(scroll);
-  });
-  const place = () => {
+/* ---------- drag-and-drop presentation order ----------
+   Touch (iPhone): press and hold a screen ~0.3 s (or touch the grip), then drag. Moving before the hold
+   completes is treated as a normal page scroll. While dragging, page scrolling is blocked.
+   Mouse: drag a screen (or its grip) up or down. The on/off switch never starts a drag. */
+const Drag = (function(){
+  let d = null, pend = null, raf = 0;
+  const HOLD = 300, SLOP = 8;
+  const startable = t => { const row = t.closest && t.closest('.orow'); return row && !t.closest('.sw') ? row : null; };
+  function begin(row, y){
+    const list = row.parentElement, r = row.getBoundingClientRect();
+    d = {row, list, y, grab: y - r.top};
+    row.classList.add('dragging'); document.body.classList.add('dragging-order');
+    follow();
+    const edge = () => { if(!d) return;                                  // auto-scroll near the top / bottom edge
+      const dy = d.y < 110 ? -9 : d.y > innerHeight - 190 ? 9 : 0;
+      if(dy){ window.scrollBy(0, dy); move(d.y); } raf = requestAnimationFrame(edge); };
+    raf = requestAnimationFrame(edge);
+  }
+  function follow(){                                                      // keep the lifted row under the finger
+    d.row.style.transform = 'none';
+    const top = d.row.getBoundingClientRect().top;
+    d.row.style.transform = `translateY(${d.y - d.grab - top}px)`;
+  }
+  function move(y){
+    d.y = y;
     const others = $$('.orow', d.list).filter(r => r !== d.row);
-    const before = others.find(r => { const b = r.getBoundingClientRect(); return d.y < b.top + b.height / 2; });
-    if(before){ if(d.row.nextElementSibling !== before) d.list.insertBefore(d.row, before); }
-    else if(d.list.lastElementChild !== d.row) d.list.appendChild(d.row);
-  };
-  view.addEventListener('pointermove', e => { if(!d) return; e.preventDefault(); d.y = e.clientY; place(); });
-  const end = () => {
-    if(!d) return; cancelAnimationFrame(raf);
-    const ids = $$('.orow', d.list).map(r => r.dataset.id); d = null;
-    saveOrder(ids); renderPres();
-  };
-  view.addEventListener('pointerup', end); view.addEventListener('pointercancel', end);
+    const before = others.find(r => { const b = r.getBoundingClientRect(); return y < b.top + b.height / 2; }) || null;
+    if((before ? d.row.nextElementSibling !== before : d.list.lastElementChild !== d.row)){
+      const first = new Map(others.map(r => [r, r.getBoundingClientRect().top]));     // animate the rows that shift
+      d.list.insertBefore(d.row, before);
+      others.forEach(r => { const dy = first.get(r) - r.getBoundingClientRect().top; if(!dy) return;
+        r.style.transition = 'none'; r.style.transform = `translateY(${dy}px)`;
+        requestAnimationFrame(() => { r.style.transition = 'transform .18s ease'; r.style.transform = ''; }); });
+    }
+    follow();
+  }
+  function finish(){
+    clearPending();
+    if(!d) return;
+    cancelAnimationFrame(raf);
+    const ids = $$('.orow', d.list).map(r => r.dataset.id);
+    d.row.classList.remove('dragging'); document.body.classList.remove('dragging-order'); d = null;
+    S.pres.order = ids; savePresCfg(); renderPres(true);
+  }
+  function clearPending(){ if(pend){ clearTimeout(pend.timer); pend.row.classList.remove('pressing'); pend = null; } }
+
+  // touch
+  view.addEventListener('touchstart', e => {
+    if(e.touches.length !== 1 || d) return;
+    const row = startable(e.target); if(!row) return;
+    const t = e.touches[0];
+    if(e.target.closest('.grip')){ e.preventDefault(); begin(row, t.clientY); return; }
+    pend = {row, x:t.clientX, y:t.clientY, timer:setTimeout(() => { const p = pend; pend = null; p.row.classList.remove('pressing'); begin(p.row, p.y); }, HOLD)};
+    row.classList.add('pressing');
+  }, {passive:false});
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if(d){ e.preventDefault(); move(t.clientY); return; }                   // dragging: the page must not scroll
+    if(pend && (Math.abs(t.clientX - pend.x) > SLOP || Math.abs(t.clientY - pend.y) > SLOP)) clearPending();   // it's a scroll
+    else if(pend){ pend.y = t.clientY; }
+  }, {passive:false});
+  document.addEventListener('touchend', finish);
+  document.addEventListener('touchcancel', finish);
+  view.addEventListener('contextmenu', e => { if(e.target.closest && e.target.closest('.orow')) e.preventDefault(); });
+
+  // mouse / pen (touch is handled above)
+  view.addEventListener('pointerdown', e => {
+    if(e.pointerType === 'touch' || e.button !== 0 || d) return;
+    const row = startable(e.target); if(!row) return;
+    e.preventDefault();
+    pend = {row, x:e.clientX, y:e.clientY, mouse:true, timer:0};
+  });
+  document.addEventListener('pointermove', e => {
+    if(e.pointerType === 'touch') return;
+    if(d){ e.preventDefault(); move(e.clientY); return; }
+    if(pend && pend.mouse && Math.abs(e.clientY - pend.y) > 4){ const p = pend; pend = null; begin(p.row, p.y); move(e.clientY); }
+  });
+  document.addEventListener('pointerup', e => { if(e.pointerType !== 'touch') finish(); });
+  return {active: () => !!d};
 })();
 
 /* ---------- light / dark mode (saved on this device) ---------- */
@@ -1176,7 +1292,7 @@ function importBackup(file){
       d.prospects.forEach(p => { const i = S.prospects.findIndex(x => x.id === p.id); if(i < 0) S.prospects.push(p); else if((p.updated||0) > (S.prospects[i].updated||0)) S.prospects[i] = p; });
       store.set('ap.prospects', S.prospects);
       if(d.settings && await ask('Also import settings?', 'Replace your rep details, default pricing and disclaimer with the backup’s?', 'Replace', 'Keep mine')){
-        S.settings = Object.assign({}, DEFAULT_SETTINGS, d.settings); store.set('ap.settings', S.settings); }
+        S.settings = normalizeLock(Object.assign({}, DEFAULT_SETTINGS, d.settings)); store.set('ap.settings', S.settings); }
       toast('Backup imported'); renderSettings();
     }catch(e){ toast('That file isn’t a valid backup'); }
   };
@@ -1200,7 +1316,7 @@ function missingForShow(){
 }
 
 function buildSlides(){
-  const p = S.p, c = calc(p), sl = p.slides, biz = esc(p.business), pos = c.monthly > 0.5;
+  const p = S.p, c = calc(p), sl = S.pres.on, biz = esc(p.business), pos = c.monthly > 0.5;   // read the saved setup fresh every time
   const out = [], add = (id, html) => out.push({id, html});
   const cnt = (v, fmt, cls='') => `<span class="num ${cls}" data-count="${v}" data-fmt="${fmt}">${fmt==='pct'?pct(0):money(0)}</span>`;
 
@@ -1233,7 +1349,7 @@ function buildSlides(){
 
   if(sl.savings && pos){
     const N = yearsOver(c.annual);   // 3 years, or longer if 3 years doesn't pass $3,000
-    const L = LINES.filter(l => p.lines[l.id] && (l.id !== 'yN' || N <= MULTI_YEAR_MAX));
+    const L = LINES.filter(l => S.pres.lines[l.id] && (l.id !== 'yN' || N <= MULTI_YEAR_MAX));
     const val = id => ({m:c.monthly, y:c.annual, yN:c.annual*N})[id];
     const cap = {m:'every month', y:'every year', yN:`over ${N} years`};
     if(L.length){
@@ -1309,7 +1425,7 @@ function buildSlides(){
       <p class="fine" data-a style="--d:6">Estimated based on the information provided. Not a guarantee of pricing or savings.</p>
       ${r.repName ? `<p class="contact" data-a style="--d:7">Your ActivityPay contact: <b>${esc(r.repName)}</b>${r.repPhone ? ` · ${esc(r.repPhone)}` : ''}</p>` : ''}`);
   }
-  out.sort((a, b) => S.order.indexOf(a.id) - S.order.indexOf(b.id));   // the rep's chosen screen order
+  out.sort((a, b) => S.pres.order.indexOf(a.id) - S.pres.order.indexOf(b.id));   // the rep's chosen screen order
   return out;
 }
 
@@ -1324,6 +1440,8 @@ async function showCustomer(){
   $('#stage').innerHTML = P.slides.map((s,i) => `<section class="slide s-${s.id==='savings'?'sav':s.id}" data-i="${i}">${s.html}</section>`).join('');
   $('#dots').innerHTML = P.slides.map(() => '<i></i>').join('');
   $('#pBiz').textContent = S.p.business;
+  $('#present').classList.toggle('locked', !!(S.settings.lockOn && S.settings.pinHash));
+  $('#hideBtn').setAttribute('aria-label', S.settings.lockOn ? 'Exit presentation (PIN required)' : 'Exit presentation');
   $('#rep').hidden = true; $('#present').hidden = false;
   fitPresentation();
   document.querySelector('meta[name=theme-color]').content = '#0b1c2a';
@@ -1408,38 +1526,50 @@ document.addEventListener('visibilitychange', async () => {
   if(!document.hidden && !$('#present').hidden && 'wakeLock' in navigator){ try{ P.wake = await navigator.wakeLock.request('screen'); }catch(e){} }
 });
 
-/* Exit: tap "Exit" (or "Done" on the last screen, or Esc) → confirm → optional PIN → back to Rep Mode */
+/* Exit: tap "Exit" (or "Done" on the last screen, or Esc).
+   Presentation Lock OFF → "Leave the presentation?" confirm → Rep Mode.
+   Presentation Lock ON  → "Enter Presentation PIN" → correct PIN exits; a wrong PIN stays in the presentation. */
 $('#hideBtn').addEventListener('click', e => { e.preventDefault(); requestExit(); });
 function requestExit(){
   if($('#present').hidden || $('.pinpad', $('#present'))) return;
+  if(S.settings.lockOn && S.settings.pinHash){ pinPad(); return; }
   const box = document.createElement('div'); box.className = 'pinpad';
   box.innerHTML = `<div class="xq">Leave the presentation?</div><div class="xs">You’ll return to Rep Mode.</div>
     <div class="xb"><button class="pri" data-x="exit">Exit to Rep Mode</button><button data-x="stay">Keep presenting</button></div>`;
   box.addEventListener('click', e => {
     const k = e.target.closest('button'); if(!k) return;
     box.remove();
-    if(k.dataset.x === 'exit') pinThenExit();
+    if(k.dataset.x === 'exit') hideCustomer();
   });
   $('#present').appendChild(box);
 }
-function pinThenExit(){
-  const pin = S.settings.pin;
-  if(!pin || pin.length < 4){ hideCustomer(); return; }
-  let entry = '';
-  const pad = document.createElement('div'); pad.className = 'pinpad';
-  const draw = () => pad.innerHTML = `<div style="font-weight:600;color:#c9d6e0">Enter code</div><div class="pd">${[0,1,2,3].map(i => `<i class="${i<entry.length?'f':''}"></i>`).join('')}</div>
+function pinPad(){
+  let entry = '', busy = false, msg = '';
+  const pad = document.createElement('div'); pad.className = 'pinpad'; pad.id = 'pinPad';
+  const draw = () => pad.innerHTML = `<div class="xq">Enter Presentation PIN</div><div class="pd">${[0,1,2,3].map(i => `<i class="${i<entry.length?'f':''}"></i>`).join('')}</div>
+    <div class="pinerr" aria-live="assertive">${msg}</div>
     <div class="keys">${[1,2,3,4,5,6,7,8,9].map(d => `<button data-d="${d}">${d}</button>`).join('')}<button class="txt" data-x="c">Cancel</button><button data-d="0">0</button><button class="txt" data-x="b">⌫</button></div>`;
-  draw();
-  pad.addEventListener('click', e => {
-    const k = e.target.closest('button'); if(!k) return;
-    if(k.dataset.x === 'c'){ pad.remove(); return; }
-    if(k.dataset.x === 'b'){ entry = entry.slice(0,-1); draw(); return; }
-    entry += k.dataset.d; draw();
+  const press = key => {
+    if(busy) return;
+    if(key === 'c'){ pad.remove(); document.removeEventListener('keydown', keys, true); return; }
+    if(key === 'b'){ entry = entry.slice(0,-1); draw(); return; }
+    if(!/^\d$/.test(key) || entry.length >= 4) return;
+    entry += key; msg = ''; draw();
     if(entry.length === 4){
-      if(entry === pin){ pad.remove(); hideCustomer(); }
-      else { const pd = $('.pd', pad); pd.classList.add('shake'); setTimeout(() => { entry = ''; draw(); }, 400); }
+      if(pinHash(entry) === S.settings.pinHash){ document.removeEventListener('keydown', keys, true); pad.remove(); hideCustomer(); }
+      else { busy = true; $('.pd', pad).classList.add('shake');
+        setTimeout(() => { entry = ''; msg = 'Incorrect PIN. Try again.'; busy = false; draw(); }, 400); }
     }
-  });
+  };
+  const keys = e => {                                   // desktop keyboard: digits, Backspace, Esc
+    if(!pad.isConnected){ document.removeEventListener('keydown', keys, true); return; }
+    e.stopPropagation();
+    if(/^\d$/.test(e.key)) press(e.key); else if(e.key === 'Backspace') press('b'); else if(e.key === 'Escape') press('c');
+    e.preventDefault();
+  };
+  draw();
+  pad.addEventListener('click', e => { const k = e.target.closest('button'); if(k) press(k.dataset.x || k.dataset.d); });
+  document.addEventListener('keydown', keys, true);
   $('#present').appendChild(pad);
 }
 
@@ -1522,10 +1652,10 @@ document.addEventListener('focusout', () => {
 try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
 $('#curName').textContent = S.p.business || 'New prospect';
 go(S.tab);
-// Resume after an iOS reload mid-presentation, but only if it started within the last 2 hours,
-// so reopening the app later never drops you straight back into the customer view.
-const presentingSince = store.get('ap.presenting', false);
-if(typeof presentingSince === 'number' && Date.now() - presentingSince < 2 * 3600e3 && !missingForShow().length) showCustomer();
+// Resume after an iOS reload mid-presentation, but only if it started recently (2 hours; 12 hours when
+// Presentation Lock is on, so a customer can't escape the lock by closing the app). The PIN always exits.
+const presentingSince = store.get('ap.presenting', false), resumeFor = (S.settings.lockOn ? 12 : 2) * 3600e3;
+if(typeof presentingSince === 'number' && Date.now() - presentingSince < resumeFor && !missingForShow().length) showCustomer();
 else store.set('ap.presenting', false);
 if('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

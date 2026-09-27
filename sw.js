@@ -1,5 +1,5 @@
 // Offline cache for ActivityPay Sales. Bump VERSION after editing any app file.
-const VERSION = 'ap-calc-v11';
+const VERSION = 'ap-calc-v12';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icons/icon.svg',
   'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
