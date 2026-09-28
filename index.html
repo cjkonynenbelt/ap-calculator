@@ -147,12 +147,13 @@ details.more[open] summary{margin-bottom:8px}
 .row .grow{flex:1;min-width:0}
 .row .t{font-weight:600;font-size:15px}
 .row .s{font-size:12.5px;color:var(--muted);margin-top:2px}
-.sw{position:relative;width:50px;height:30px;flex:none}
-.sw input{position:absolute;inset:-8px;opacity:0;margin:0;cursor:pointer;z-index:1}
-.sw i{position:absolute;inset:0;border-radius:99px;background:#d5dde5;transition:.2s}
+.sw{position:relative;display:block;width:50px;height:30px;flex:none;padding:0;margin:0;border:0;background:none;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:manipulation}
+.sw::before{content:"";position:absolute;inset:-10px -10px}          /* bigger invisible finger target */
+.sw:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:99px}
+.sw i{position:absolute;inset:0;border-radius:99px;background:#d5dde5;transition:.2s;pointer-events:none}
 .sw i::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
-.sw input:checked+i{background:var(--teal)}
-.sw input:checked+i::after{transform:translateX(20px)}
+.sw[aria-checked="true"] i,html[data-theme="dark"] .sw[aria-checked="true"] i{background:var(--teal)}
+.sw[aria-checked="true"] i::after{transform:translateX(20px)}
 .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 7px;border-radius:99px;background:#e6f4f2;color:var(--good);vertical-align:middle}
 .badge.confirm{background:#fff3e0;color:#b25f00}
 .chips{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px}
@@ -688,7 +689,9 @@ function txtField(k, label, ph, opt={}){
   return `<label class="field ${opt.big?'big':''}"><span class="flabel">${label}</span>
     <span class="finput"><input data-k="${k}" type="${opt.type||'text'}" ${opt.im?`inputmode="${opt.im}"`:''} autocomplete="off" enterkeyhint="next" autocapitalize="${opt.type==='email'?'off':'words'}" ${opt.type==='email'?'autocorrect="off" spellcheck="false"':''} value="${esc(S.p[k])}" placeholder="${esc(ph||'')}"></span></label>`;
 }
-function sw(attr, checked){ return `<span class="sw"><input type="checkbox" ${attr} ${checked?'checked':''}><i></i></span>`; }
+// On/off switch. A real <button role="switch"> (not a hidden checkbox), so a tap on iPhone Safari always
+// registers; the view's click handler flips aria-checked and applies the setting (see handleSwitch).
+function sw(attr, checked){ return `<button type="button" class="sw" role="switch" aria-checked="${checked ? 'true' : 'false'}" ${attr}><i></i></button>`; }
 
 /* ---------- TAB: calculator ---------- */
 function renderCalc(){
@@ -730,7 +733,7 @@ function renderCalc(){
     <div class="aprate"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>ActivityPay rate</span><b class="num">${AP_RATE.toFixed(2)}%</b></div>
     <div class="readout"><span>ActivityPay monthly cost</span><b data-out="apProc">—</b></div>
     ${q ? '' : `<div style="height:12px"></div>${numField('aSoftware','Software costs with ActivityPay','$',{ph:'0.00'})}
-    <div class="row" style="padding:10px 2px 0"><div class="grow"><div class="t">Include software costs</div><div class="s">Adds software to both totals in the comparison</div></div>${sw('data-k="inclSoftware"', p.inclSoftware)}</div>`}</div>`;
+    <div class="row" style="padding:10px 2px 0"><div class="grow"><div class="t">Include software costs</div><div class="s">Adds software to both totals in the comparison</div></div>${sw('data-k="inclSoftware" aria-label="Include software costs"', p.inclSoftware)}</div>`}</div>`;
 
   h += `<div class="card results"><h3>Savings (live)</h3><div class="rgrid">
     <div class="rbox"><div class="k">Current monthly cost</div><div class="v num" data-out="rCt">—</div></div>
@@ -837,7 +840,7 @@ function renderPres(keepScroll){
       : (N => N > MULTI_YEAR_MAX ? `Not shown — would take ${N} years` : `${money(c.annual*N)} over ${N} years`)(yearsOver(c.annual))) : '—'}</div></div>${sw(`data-line="${l.id}" aria-label="${l.label}"`, cfg.lines[l.id])}</div>`).join('')}</div>`;
   h += `<div class="card"><h3>ActivityPay capabilities <span class="tag">${p.features.length} selected</span></h3>
     <p class="help" style="margin:0 2px 6px">Only selected items are shown. <span class="badge">On website</span> = described on activitypay.co. <span class="badge confirm">Confirm first</span> = not on the public site; confirm availability for this merchant before selecting.</p>
-    ${FEATURES.map(f => `<div class="row"><div class="grow"><div class="t">${f.t} <span class="badge ${f.verified?'':'confirm'}">${f.verified?'On website':'Confirm first'}</span></div><div class="s">${f.d}</div></div>${sw(`data-feat="${f.id}"`, p.features.includes(f.id))}</div>`).join('')}
+    ${FEATURES.map(f => `<div class="row"><div class="grow"><div class="t">${f.t} <span class="badge ${f.verified?'':'confirm'}">${f.verified?'On website':'Confirm first'}</span></div><div class="s">${f.d}</div></div>${sw(`data-feat="${f.id}" aria-label="Show ${f.t}"`, p.features.includes(f.id))}</div>`).join('')}
     <div class="btnrow" style="margin:10px 0 0"><button class="btn" data-act="featNone">Clear all</button></div></div>`;
   $('#view').innerHTML = h;
   if(keepScroll) window.scrollTo(0, y);
@@ -1084,22 +1087,7 @@ view.addEventListener('input', e => {
 });
 view.addEventListener('change', e => {
   const t = e.target;
-  if(t.dataset.slide){ S.pres.on[t.dataset.slide] = t.checked; savePresCfg(); renderPres(true); }
-  else if(t.dataset.line){ S.pres.lines[t.dataset.line] = t.checked; savePresCfg(); renderPres(true); }
-  else if(t.dataset.lock !== undefined){ lockSwitch(t.checked); }
-  else if(t.dataset.feat){
-    const f = S.p.features, id = t.dataset.feat, feat = FEATURES.find(x => x.id === id);
-    if(t.checked){
-      if(!feat.verified){
-        ask('Confirm availability', `“${feat.t}” isn’t described on ActivityPay’s public website. Only show it if you’ve confirmed it’s available for this merchant.`, 'Confirmed — show it', 'Cancel')
-          .then(ok => { if(ok){ f.push(id); touch(); } renderPres(true); });
-        return;
-      }
-      if(!f.includes(id)) f.push(id);
-    } else S.p.features = f.filter(x => x !== id);
-    touch(); renderPres(true);
-  }
-  else if(t.dataset.k === 'status'){ S.p.status = t.value; touch(); }
+  if(t.dataset.k === 'status'){ S.p.status = t.value; touch(); }
   else if(t.id === 'importFile') importBackup(t.files[0]);
 });
 // Raw text is kept while typing; tidy formatting only happens when the field loses focus.
@@ -1130,6 +1118,8 @@ view.addEventListener('keydown', e => {
   }
 });
 view.addEventListener('click', async e => {
+  const swb = e.target.closest('.sw[role="switch"]');
+  if(swb){ e.preventDefault(); handleSwitch(swb); return; }
   const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-themeset]'); if(!b) return;
   if(b.dataset.themeset){ setTheme(b.dataset.themeset); renderSettings(); return; }
   if(b.dataset.projyears){ S.e.projYears = +b.dataset.projyears; saveEarn(); renderEarn(true); return; }
@@ -1177,6 +1167,28 @@ async function deleteCurrent(){
   if(!(await ask('Delete prospect?', `“${S.p.business || 'This prospect'}” will be removed from this iPhone. This can’t be undone.`, 'Delete', 'Cancel', true))) return;
   S.prospects = S.prospects.filter(x => x.id !== S.p.id); store.set('ap.prospects', S.prospects);
   S.p = newProspect(); persistCurrent(); renderCalc(); toast('Prospect deleted');
+}
+// Flip a switch: update it on screen immediately, then change the real setting it controls.
+function handleSwitch(btn){
+  const on = btn.getAttribute('aria-checked') !== 'true', d = btn.dataset;
+  const show = v => btn.setAttribute('aria-checked', v ? 'true' : 'false');
+  show(on);
+  if(d.slide){ S.pres.on[d.slide] = on; savePresCfg(); renderPres(true); }
+  else if(d.line){ S.pres.lines[d.line] = on; savePresCfg(); renderPres(true); }
+  else if(d.lock !== undefined){ lockSwitch(on); }
+  else if(d.feat){
+    const id = d.feat, feat = FEATURES.find(x => x.id === id);
+    if(on && !feat.verified){
+      show(false);                                                          // stays off until confirmed
+      ask('Confirm availability', `“${feat.t}” isn’t described on ActivityPay’s public website. Only show it if you’ve confirmed it’s available for this merchant.`, 'Confirmed — show it', 'Cancel')
+        .then(ok => { if(ok && !S.p.features.includes(id)){ S.p.features.push(id); touch(); } renderPres(true); });
+      return;
+    }
+    if(on){ if(!S.p.features.includes(id)) S.p.features.push(id); }
+    else S.p.features = S.p.features.filter(x => x !== id);
+    touch(); renderPres(true);
+  }
+  else if(d.k){ S.p[d.k] = on; touch(); updateResults(); }
 }
 function migrateP(){ const base = newProspect(); for(const k in base) if(!(k in S.p)) S.p[k] = base[k]; }
 
