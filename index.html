@@ -135,6 +135,57 @@ details.more[open] summary{margin-bottom:8px}
 .goalres .v{font-size:38px;font-weight:800;color:var(--teal);margin:6px 0 2px;white-space:nowrap}
 .goalres .s{font-size:13px;color:var(--muted);font-weight:600}
 .goalres .others{font-size:13px;color:var(--slate);margin-top:8px}
+/* Income Calculator */
+.stepb{display:inline-block;flex:none;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:var(--teal);color:#fff;margin-right:2px}
+.stepb.orange{background:var(--orange)}
+.icctl{padding:12px 0 14px;border-bottom:1px solid var(--line)}
+.icctl:last-of-type{border-bottom:0}
+.iclbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.icrow{display:flex;align-items:center;gap:14px}
+.icnum{width:108px;flex:none;border-color:var(--teal)}
+.icnum input{font-size:22px;font-weight:800;text-align:center;color:var(--teal);padding:10px 2px}
+.icrange{--p:50%;flex:1;min-width:0;height:40px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;touch-action:pan-y;cursor:pointer}
+.icrange::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,var(--teal) var(--p),var(--line) var(--p))}
+.icrange::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--teal);border:3px solid #fff;box-shadow:0 1px 5px rgba(12,30,45,.35)}
+.icrange::-moz-range-track{height:6px;border-radius:3px;background:var(--line)}
+.icrange::-moz-range-progress{height:6px;border-radius:3px;background:var(--teal)}
+.icrange::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--teal);border:3px solid #fff;box-shadow:0 1px 5px rgba(12,30,45,.35)}
+.icrange:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:8px}
+.icminmax{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted);margin:2px 0 0 122px}
+.icstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.icstat{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 10px}
+.icstat .k{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.icstat .v{font-size:26px;font-weight:800;margin-top:4px;color:var(--ink)}
+.icstat .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+.ictiers{display:grid;gap:8px}
+.ictier{border:1.5px solid var(--line);border-top:4px solid var(--faint);border-radius:14px;padding:14px;background:var(--card)}
+.ictier.t2{border-top-color:var(--teal)}
+.ictier.t3{border-top-color:var(--orange);border-color:var(--orange);box-shadow:0 0 0 1px rgba(251,133,0,.15),0 6px 18px rgba(251,133,0,.12)}
+.ictier .p{font-size:36px;font-weight:800;line-height:1;color:var(--slate);letter-spacing:-.02em}
+.ictier.t2 .p{color:var(--teal)}
+.ictier.t3 .p{color:var(--orange)}
+.ictier .n{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.ictier .h{font-weight:800;margin-top:8px;font-size:14.5px;color:var(--ink)}
+.ictier .d{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.4}
+.ictier .pill{display:inline-block;margin-top:10px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:99px;padding:4px 10px;color:var(--ink)}
+.ictier.t3 .pill{color:var(--orange)}
+.ictier.dim .p,.ictier.dim .h{opacity:.55}
+.icyears{display:grid;gap:10px}
+.icyear{border-radius:16px;padding:16px;background:linear-gradient(160deg,var(--navy),var(--navy3));color:#fff;border:1.5px solid rgba(255,255,255,.1)}
+.icyear.y3{border-color:rgba(78,205,196,.5);background:linear-gradient(160deg,#08202a,#0d2f3a)}
+.icyear.y5{border-color:rgba(251,133,0,.55);background:linear-gradient(160deg,#1a1320,#2b1a17)}
+.icyear .t{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#aebfcc}
+.icyear .yl{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#aebfcc;margin-top:6px}
+.icyear.y3 .yl{color:var(--mint)}
+.icyear.y5 .yl{color:#ff9d3c}
+.icyear .big{font-size:40px;font-weight:800;line-height:1.05;margin-top:8px}
+.icyear .sub{font-size:13px;color:#aebfcc;margin-top:2px}
+.icyear .kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;color:#c9d6e0;padding-top:8px}
+.icyear .kv.first{border-top:1px solid rgba(255,255,255,.12);margin-top:12px;padding-top:12px}
+.icyear .kv b{font-weight:800;color:#fff;font-size:16px}
+.icyear .bdg{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:800;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.08);color:#c9d6e0}
+.icyear.y3 .bdg{background:rgba(78,205,196,.14);color:var(--mint)}
+.icyear.y5 .bdg{background:rgba(251,133,0,.16);color:#ff9d3c}
 .paces{display:grid;gap:8px}
 .pace{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;text-align:left;min-height:56px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg)}
 .pace span{font-size:14px;font-weight:700;color:var(--ink)}
@@ -927,7 +978,8 @@ function lockSave(){
 const EARN_TIERS = [{id:1, pct:30}, {id:2, pct:40}, {id:3, pct:50}];
 const EARN_STD_COST = '2.00', EARN_STD_MARGIN = '0.65';
 const EARN_DEFAULTS = {volume:'100,000', cost:EARN_STD_COST, margin:EARN_STD_MARGIN, tier:1, goal:'1000', goalCustom:'',
-  projGp:'270', projNew:'10', projAtt2:'5', projAtt3:'10', projYears:7};
+  projGp:'270', projNew:'10', projAtt2:'5', projAtt3:'10', projYears:7,
+  icCalls:'30', icRate:'2', icGp:'270'};
 const EARN_GOALS = [500, 1000, 2000, 5000];
 const EARN_WHATIF = [25000, 50000, 100000, 250000, 500000, 1000000];
 S.e = Object.assign({}, EARN_DEFAULTS, store.get('ap.earn', {}));
@@ -952,13 +1004,19 @@ const PROJ_CALLS = 600, PROJ_PACES = [
   {id:'aggr', label:'Aggressive but achievable', rate:2, range:'10–15 accounts/mo'},
   {id:'top',  label:'Top performer', rate:3, range:'15–20+ accounts/mo'}];
 function projCalc(){
-  const e = S.e, gpAcct = n(e.projGp), perMonth = n(e.projNew);
+  const e = S.e, perMonth = n(e.projNew);
+  return runProjection(n(e.projGp), (m, yr) => yr === 1 ? PROJ_RAMP[m - 1] : perMonth, e.projYears * 12);
+}
+// Shared engine for "Residual growth" and the Income Calculator. newAccts(month, year) = accounts added that month.
+// Attrition always comes from the Residual growth fields (5% Year 2, 10% Year 3+ by default).
+function runProjection(gpAcct, newAccts, months){
+  const e = S.e;
   const keep = r => Math.pow(1 - Math.min(Math.max(r, 0), 100) / 100, 1 / 12);
   const k2 = keep(n(e.projAtt2)), k3 = keep(n(e.projAtt3));
   const rows = []; let accts = 0, total = 0, tier = PROJ_TIERS[2];
-  for(let m = 1; m <= e.projYears * 12; m++){
+  for(let m = 1; m <= months; m++){
     const yr = Math.ceil(m / 12);
-    accts = accts * (yr === 1 ? 1 : yr === 2 ? k2 : k3) + (yr === 1 ? PROJ_RAMP[m - 1] : perMonth);
+    accts = accts * (yr === 1 ? 1 : yr === 2 ? k2 : k3) + newAccts(m, yr);
     const gp = accts * gpAcct, last3 = [gp, ...rows.slice(-2).map(r => r.gp)];
     const reached = PROJ_TIERS.find(t => last3.length === 3 && last3.every(g => g >= t.min));
     if(reached && reached.pct > tier.pct) tier = reached;                // unlocked tiers never drop back
@@ -966,6 +1024,18 @@ function projCalc(){
     rows.push({m, yr, accts, gp, tier, pay, total});
   }
   return rows;
+}
+// Income Calculator ("what will I make"): calls/day × 5 days × 4 weeks × close rate = new accounts every month
+// from month 1 (no Year-1 ramp), then the proforma's tiers and attrition.
+const IC_CTRLS = [
+  {k:'icCalls', label:'Calls I will make per day', unit:'#', min:1, max:200, step:1, lo:'1', hi:'200', help:'Change to see projections update instantly'},
+  {k:'icRate', label:'My close rate', unit:'%', min:0.5, max:10, step:0.1, lo:'0.5%', hi:'10%', help:'Enter as a percentage (1 = 1%, 2 = 2%)'},
+  {k:'icGp', label:'GP per account ($)', unit:'$', min:50, max:1000, step:10, lo:'$50', hi:'$1,000', help:'Proforma uses $270 per account per month (90% net)'}];
+const IC_YEARS = 5, IC_DAYS = 20;   // 5 days/week × 4 weeks
+function incomeCalc(){
+  const e = S.e, calls = Math.max(0, n(e.icCalls)), rate = Math.max(0, n(e.icRate)), gp = Math.max(0, n(e.icGp));
+  const perMonth = calls * IC_DAYS * rate / 100;
+  return {calls, rate, gp, perMonth, rows: runProjection(gp, () => perMonth, IC_YEARS * 12)};
 }
 const earnGoal = () =>S.e.goal === 'custom' ? n(S.e.goalCustom) : n(S.e.goal);
 // volume needed so that volume × margin% × tier% = goal
@@ -1042,8 +1112,34 @@ function renderEarn(keepScroll){
       <button class="pace ${n(e.projNew) === a ? 'on' : ''}" data-pace="${a}"><span>${p.label}</span><b>${a}<small> accounts/mo</small></b>
         <em>${p.rate}% close rate · ${p.range}</em></button>`; }).join('')}</div>
     <p class="help">Tap a pace to run the residual projection above at that many new accounts a month (Year 2 onward).</p></div>`;
+  // ---- Income Calculator: "how much will I make?" ----
+  h += `<div class="h1" style="margin-top:22px">Income Calculator</div>
+    <p class="help" style="margin:-4px 2px 14px">How much you could make from your daily calls. Uses your proforma’s tiers and attrition.</p>`;
+  h += `<div class="card"><h3><span class="stepb">Step 1</span>Commit to your daily number</h3>${IC_CTRLS.map(c => `
+    <div class="icctl"><div class="iclbl">${c.label}</div>
+      <div class="icrow"><span class="finput icnum">${c.unit==='$'?'<i>$</i>':''}<input data-ic="${c.k}" data-u="${c.unit}" type="text" inputmode="${c.unit==='#'?'numeric':'decimal'}" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(e[c.k])}" aria-label="${c.label}">${c.unit==='%'?'<i>%</i>':''}</span>
+        <input class="icrange" type="range" data-ic="${c.k}" min="${c.min}" max="${c.max}" step="${c.step}" value="${esc(n(e[c.k]))}" aria-label="${c.label} slider"></div>
+      <div class="icminmax"><span>${c.lo}</span><span>${c.hi}</span></div>
+      <p class="help" style="margin:4px 2px 0">${c.help}</p></div>`).join('')}
+    <button class="linkbtn" data-act="icReset">Reset to 30 calls · 2% · $270</button></div>`;
+  h += `<div class="card"><h3><span class="stepb">Step 2</span>What your calls produce</h3><div class="icstats">
+    <div class="icstat"><div class="k">Accounts / month</div><div class="v num" data-eo="icAcct">—</div><div class="s">New MIDs added monthly</div></div>
+    <div class="icstat"><div class="k">Calls / week</div><div class="v num" data-eo="icWeek">—</div><div class="s">5-day commitment</div></div>
+    <div class="icstat"><div class="k">Calls / month</div><div class="v num" data-eo="icMonth">—</div><div class="s">Full monthly volume</div></div></div></div>`;
+  h += `<div class="card"><h3><span class="stepb orange">Tiers</span>How your commission tiers work</h3><div class="ictiers">
+    <div class="ictier t1"><div class="p">30%</div><div class="n">Tier 1 — starting rate</div><div class="h">Everyone starts here</div>
+      <div class="d">Your base rate on every dollar of portfolio GP.</div><span class="pill">Starting tier</span></div>
+    <div class="ictier t2" data-eo="icT2box"><div class="p">40%</div><div class="n">Tier 2 — growth rate</div><div class="h" data-eo="icT2h">—</div>
+      <div class="d">A 33% raise on your entire book once you hold the threshold 3 months in a row.</div><span class="pill" data-eo="icT2m">—</span></div>
+    <div class="ictier t3" data-eo="icT3box"><div class="p">50%</div><div class="n">Tier 3 — full residual</div><div class="h" data-eo="icT3h">—</div>
+      <div class="d">50 cents on every dollar your portfolio generates. Once unlocked, it stays.</div><span class="pill" data-eo="icT3m">—</span></div></div></div>`;
+  h += `<div class="card"><h3><span class="stepb">Step 3</span>Your income projection</h3>
+    <p class="help" style="margin:0 2px 10px">Same calls. Same close rate. Watch what happens when your tier jumps and your entire book re-prices upward — this is how residual income compounds.</p>
+    <div class="icyears" data-eo="icYears"></div>
+    <p class="help">Includes attrition of ${esc(e.projAtt2)}% in Year 2 and ${esc(e.projAtt3)}% a year after that (change it under Residual growth). Accounts per month = calls/day × 5 days × 4 weeks × close rate.</p></div>`;
   h += `<p class="help" style="margin:4px 4px 0">Estimates for illustration only. Actual earnings depend on your agreement with ActivityPay and on real card costs.</p>`;
   $('#view').innerHTML = h;
+  $$('input.icrange').forEach(icFill);
   updateEarn();
   if(keepScroll) window.scrollTo(0, y);
 }
@@ -1082,7 +1178,47 @@ function updateEarn(){
   }).join(''), true);
   fitRep();
   set('projMonths', rows.map(r => `<tr class="${r.m % 12 === 1 ? 'yr' : ''}"><td>${r.m}</td><td>${Math.round(r.accts)}</td><td>${cents(r.gp)}</td><td>${r.tier.pct}%</td><td>${cents(r.pay)}</td></tr>`).join(''), true);
+  updateIncome();
 }
+
+// Income Calculator — outputs only (inputs are never re-rendered while typing or dragging)
+function updateIncome(){
+  if(S.tab !== 'earn' || !$('[data-eo="icYears"]')) return;
+  const set = (k, v, html) => $$(`[data-eo="${k}"]`).forEach(el => html ? el.innerHTML = v : el.textContent = v);
+  const ic = incomeCalc(), rows = ic.rows;
+  set('icAcct', ic.perMonth.toLocaleString('en-US', {maximumFractionDigits:1}));
+  set('icWeek', Math.round(ic.calls * 5).toLocaleString('en-US'));
+  set('icMonth', Math.round(ic.calls * IC_DAYS).toLocaleString('en-US'));
+  const tierInfo = (pct, min) => {
+    const r = rows.find(x => x.tier.pct >= pct), need = ic.gp > 0 ? Math.ceil(min / ic.gp) : 0;
+    return {h: `Unlocked at ${money(min)} GP/mo${need ? ` (≈ ${need.toLocaleString('en-US')} accounts)` : ''}`,
+            m: r ? `Month ${r.m}` : `Not within ${IC_YEARS} years`, reached: !!r};
+  };
+  const t2 = tierInfo(40, 25000), t3 = tierInfo(50, 50000);
+  set('icT2h', t2.h); set('icT2m', t2.m); set('icT3h', t3.h); set('icT3m', t3.m);
+  $('[data-eo="icT2box"]').classList.toggle('dim', !t2.reached);
+  $('[data-eo="icT3box"]').classList.toggle('dim', !t3.reached);
+  const yearTotal = y => rows.filter(r => r.yr === y).reduce((a, r) => a + r.pay, 0), y1 = yearTotal(1);
+  set('icYears', [1, 3, 5].map(y => {
+    const end = rows[y * 12 - 1], total = yearTotal(y);
+    const badge = y === 1 ? 'Your baseline' : y1 > 0 ? `${(total / y1).toLocaleString('en-US', {maximumFractionDigits:1})}× Year 1` : '—';
+    return `<div class="icyear y${y}"><div class="t">Active tier: Tier ${end.tier.id} | ${end.tier.pct}%</div><div class="yl">Year ${y}</div>
+      <div class="big num">${money(total)}</div><div class="sub">Annual earnings</div>
+      <div class="kv first"><span>Monthly (end of year)</span><b class="num">${money(end.pay)}</b></div>
+      <div class="kv"><span>Cumulative accounts</span><b class="num">${Math.round(end.accts).toLocaleString('en-US')}</b></div>
+      <span class="bdg">${badge}</span></div>`;
+  }).join(''), true);
+}
+// Keep a slider and its number box in step. Typing never gets reformatted mid-keystroke.
+function icInput(t){
+  const k = t.dataset.ic, isRange = t.type === 'range';
+  S.e[k] = t.value;
+  const pair = $$(`[data-ic="${k}"]`).find(x => x !== t);
+  if(pair && document.activeElement !== pair) pair.value = isRange ? t.value : (blank(t.value) ? pair.value : n(t.value));
+  $$(`input[type=range][data-ic="${k}"]`).forEach(icFill);
+  saveEarn(); updateIncome();
+}
+function icFill(r){ const p = (Math.min(Math.max(+r.value, +r.min), +r.max) - r.min) / (r.max - r.min) * 100; r.style.setProperty('--p', p + '%'); }
 
 /* ---------- tab routing ---------- */
 function go(tab){
@@ -1102,6 +1238,8 @@ view.addEventListener('input', e => {
     touch(); updateResults();
   } else if(t.dataset.e){
     earnInput(t);
+  } else if(t.dataset.ic){
+    icInput(t);
   } else if(t.dataset.pin){
     t.value = t.value.replace(/\D/g,'').slice(0,4);                         // PIN setup fields: digits only, never stored as typed
   } else if(t.dataset.s !== undefined){
@@ -1117,6 +1255,9 @@ view.addEventListener('change', e => {
 view.addEventListener('focusout', e => {
   const t = e.target, u = t.dataset.u;
   if(t.dataset.e && u){ tidyNumber(t); earnInput(t); return; }            // Earnings tab fields
+  if(t.dataset.ic && u){                                                    // Income Calculator number boxes
+    if(blank(t.value)){ const def = EARN_DEFAULTS[t.dataset.ic]; t.value = def; }   // empty box → back to default
+    tidyNumber(t); icInput(t); return; }
   if(!t.dataset.k || !u) return;
   if(t.value.trim() === ''){ if(S.p[t.dataset.k] !== ''){ S.p[t.dataset.k] = ''; touch(); updateResults(); } return; }
   tidyNumber(t);
@@ -1177,6 +1318,7 @@ view.addEventListener('click', async e => {
   else if(a === 'report') openReport();
   else if(a === 'featNone'){ S.p.features = []; touch(); renderPres(true); }
   else if(a === 'earnReset'){ S.e.cost = EARN_STD_COST; S.e.margin = EARN_STD_MARGIN; S.e._linked = true; saveEarn(); renderEarn(true); }
+  else if(a === 'icReset'){ ['icCalls','icRate','icGp'].forEach(k => S.e[k] = EARN_DEFAULTS[k]); saveEarn(); renderEarn(true); }
   else if(a === 'projReset'){ ['projGp','projNew','projAtt2','projAtt3','projYears'].forEach(k => S.e[k] = EARN_DEFAULTS[k]); saveEarn(); renderEarn(true); }
   else if(a === 'orderReset'){ S.pres.order = [...DEFAULT_ORDER]; savePresCfg(); renderPres(true); toast('Default order restored'); }
   else if(a === 'lockSave') lockSave();
@@ -1672,7 +1814,7 @@ $('#report').addEventListener('click', async e => {
 /* ---------- iPhone keyboard handling ---------- */
 // Hide the bottom dock while typing (it would otherwise float above the keyboard and cover fields),
 // and keep the focused field visible above the keyboard.
-const isField = el => el && el.matches && el.matches('#rep input:not([type=checkbox]):not([type=file]), #rep textarea, #rep select');
+const isField = el => el && el.matches && el.matches('#rep input:not([type=checkbox]):not([type=file]):not([type=range]), #rep textarea, #rep select');
 document.addEventListener('focusin', e => {
   if(!isField(e.target)) return;
   document.body.classList.add('kb');
