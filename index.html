@@ -135,6 +135,14 @@ details.more[open] summary{margin-bottom:8px}
 .goalres .v{font-size:38px;font-weight:800;color:var(--teal);margin:6px 0 2px;white-space:nowrap}
 .goalres .s{font-size:13px;color:var(--muted);font-weight:600}
 .goalres .others{font-size:13px;color:var(--slate);margin-top:8px}
+.paces{display:grid;gap:8px}
+.pace{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;text-align:left;min-height:56px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg)}
+.pace span{font-size:14px;font-weight:700;color:var(--ink)}
+.pace b{grid-row:span 2;font-size:26px;font-weight:800;color:var(--teal);white-space:nowrap}
+.pace b small{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px}
+.pace em{font-style:normal;font-size:12px;color:var(--muted);font-weight:600}
+.pace.on{background:var(--teal);border-color:var(--teal)}
+.pace.on span,.pace.on b,.pace.on b small,.pace.on em{color:#fff}
 .warn{margin-top:10px;background:rgba(251,133,0,.16);color:#ffd19a;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600}
 .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 12px}
 .btn{flex:1;min-width:120px;padding:14px;border-radius:13px;font-weight:700;font-size:15px;background:#fff;border:1.5px solid var(--line);color:var(--ink);text-align:center}
@@ -934,19 +942,26 @@ function earnCalc(){
 }
 // Residual growth projection — same math as the "Agent Residuals Proforma" sheet.
 // Accounts shrink each month by the yearly attrition rate compounded monthly, then new accounts are added.
-// Monthly GP = accounts × GP per account. A tier applies once its GP threshold is met 3 months in a row.
+// Monthly GP = accounts × GP per account. A tier unlocks once its GP threshold is met 3 months in a row,
+// and — like the sheet's "Tier2/Tier3 Unlocked" columns — stays unlocked even if GP later dips.
 const PROJ_YEARS = [3, 5, 7, 10], PROJ_RAMP = [1,3,4,4,5,5,5,5,6,7,8,9];   // year-1 new accounts per month
 const PROJ_TIERS = [{id:3, pct:50, min:50000}, {id:2, pct:40, min:25000}, {id:1, pct:30, min:0}];
+// "Notes on Calls to Accounts": 30 calls/day × 5 days × 4 weeks ≈ 600 calls/month
+const PROJ_CALLS = 600, PROJ_PACES = [
+  {id:'cons', label:'Conservative', rate:1, range:'5–10 accounts/mo'},
+  {id:'aggr', label:'Aggressive but achievable', rate:2, range:'10–15 accounts/mo'},
+  {id:'top',  label:'Top performer', rate:3, range:'15–20+ accounts/mo'}];
 function projCalc(){
   const e = S.e, gpAcct = n(e.projGp), perMonth = n(e.projNew);
   const keep = r => Math.pow(1 - Math.min(Math.max(r, 0), 100) / 100, 1 / 12);
   const k2 = keep(n(e.projAtt2)), k3 = keep(n(e.projAtt3));
-  const rows = []; let accts = 0, total = 0;
+  const rows = []; let accts = 0, total = 0, tier = PROJ_TIERS[2];
   for(let m = 1; m <= e.projYears * 12; m++){
     const yr = Math.ceil(m / 12);
     accts = accts * (yr === 1 ? 1 : yr === 2 ? k2 : k3) + (yr === 1 ? PROJ_RAMP[m - 1] : perMonth);
     const gp = accts * gpAcct, last3 = [gp, ...rows.slice(-2).map(r => r.gp)];
-    const tier = PROJ_TIERS.find(t => last3.length === 3 && last3.every(g => g >= t.min)) || PROJ_TIERS[2];
+    const reached = PROJ_TIERS.find(t => last3.length === 3 && last3.every(g => g >= t.min));
+    if(reached && reached.pct > tier.pct) tier = reached;                // unlocked tiers never drop back
     const pay = gp * tier.pct / 100; total += pay;
     rows.push({m, yr, accts, gp, tier, pay, total});
   }
@@ -1020,6 +1035,13 @@ function renderEarn(keepScroll){
     <details class="more" style="margin-top:8px"><summary>Show all ${e.projYears * 12} months</summary>
       <table class="wt sm"><thead><tr><th>Month</th><th>Accounts</th><th>Monthly GP</th><th>Tier</th><th>You earn</th></tr></thead>
       <tbody data-eo="projMonths"></tbody></table></details></div>`;
+  h += `<div class="card"><h3>Calls to accounts</h3>
+    <p class="help" style="margin:0 2px 10px">What you can expect if you put in the work. Goal: <b>10 to 15 accounts per month</b>.
+      30 calls/day × 5 days/week × 4 weeks ≈ <b>${PROJ_CALLS} calls/month</b>. 100 cold calls can expect 1–3 accounts (a 1–3% close rate).</p>
+    <div class="paces">${PROJ_PACES.map(p => { const a = PROJ_CALLS * p.rate / 100; return `
+      <button class="pace ${n(e.projNew) === a ? 'on' : ''}" data-pace="${a}"><span>${p.label}</span><b>${a}<small> accounts/mo</small></b>
+        <em>${p.rate}% close rate · ${p.range}</em></button>`; }).join('')}</div>
+    <p class="help">Tap a pace to run the residual projection above at that many new accounts a month (Year 2 onward).</p></div>`;
   h += `<p class="help" style="margin:4px 4px 0">Estimates for illustration only. Actual earnings depend on your agreement with ActivityPay and on real card costs.</p>`;
   $('#view').innerHTML = h;
   updateEarn();
@@ -1052,7 +1074,8 @@ function updateEarn(){
   set('needOthers', goal > 0 && c.margin > 0 ? EARN_TIERS.filter(t => t.id !== e.tier).map(t => `Tier ${t.id}: ${money(volumeFor(goal, c.margin, t.pct))}`).join(' · ') : '');
   const rows = projCalc(), end = rows[rows.length - 1], cents = v => money(v, true);
   set('projEnd', money(end.pay));
-  set('projSub', `${Math.round(end.accts).toLocaleString('en-US')} accounts · Tier ${end.tier.id} (${end.tier.pct}%) · ${money(end.total)} earned over ${e.projYears} years`);
+  const unlock = id => { const r = rows.find(x => x.tier.id === id || (id === 2 && x.tier.id === 3)); return r ? `month ${r.m}` : 'not reached'; };
+  set('projSub', `${Math.round(end.accts).toLocaleString('en-US')} accounts · Tier ${end.tier.id} (${end.tier.pct}%) · ${money(end.total)} earned over ${e.projYears} years<br>Tier 2 unlocks: ${unlock(2)} · Tier 3 unlocks: ${unlock(3)}`, true);
   set('projYears', rows.filter(r => r.m % 12 === 0).map(r => {
     const yearTotal = rows.filter(x => x.yr === r.yr).reduce((a, x) => a + x.pay, 0);
     return `<tr><td>${r.yr}</td><td>${Math.round(r.accts)}</td><td>${money(r.gp)}</td><td>${money(r.pay)}<br><small class="tl">Tier ${r.tier.id} · ${r.tier.pct}%</small></td><td>${money(yearTotal)}</td></tr>`;
@@ -1120,9 +1143,10 @@ view.addEventListener('keydown', e => {
 view.addEventListener('click', async e => {
   const swb = e.target.closest('.sw[role="switch"]');
   if(swb){ e.preventDefault(); handleSwitch(swb); return; }
-  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-themeset]'); if(!b) return;
+  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-pace],[data-themeset]'); if(!b) return;
   if(b.dataset.themeset){ setTheme(b.dataset.themeset); renderSettings(); return; }
   if(b.dataset.projyears){ S.e.projYears = +b.dataset.projyears; saveEarn(); renderEarn(true); return; }
+  if(b.dataset.pace){ S.e.projNew = b.dataset.pace; saveEarn(); renderEarn(true); toast(`Projection set to ${b.dataset.pace} new accounts/month`); return; }
   if(b.dataset.tier){ S.e.tier = +b.dataset.tier; saveEarn(); renderEarn(true); return; }
   if(b.dataset.goal){ S.e.goal = b.dataset.goal; saveEarn(); renderEarn(true);
     if(b.dataset.goal === 'custom'){ const c = $('input[data-e="goalCustom"]'); if(c) c.focus(); } return; }
