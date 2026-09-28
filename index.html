@@ -170,6 +170,14 @@ details.more[open] summary{margin-bottom:8px}
 .ictier .pill{display:inline-block;margin-top:10px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:99px;padding:4px 10px;color:var(--ink)}
 .ictier.t3 .pill{color:var(--orange)}
 .ictier.dim .p,.ictier.dim .h{opacity:.55}
+.ictier[data-ictier]{position:relative;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.ictier[data-ictier]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.ictier .icsel{display:none;position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:99px;background:var(--teal);color:#fff}
+.ictier.sel{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal),0 6px 18px rgba(58,134,168,.22)}
+.ictier.sel .icsel{display:inline-block}
+.ictier.sel .p,.ictier.sel .h{opacity:1}
+.ictier.t3.sel{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange),0 6px 18px rgba(251,133,0,.22)}
+.ictier.t3.sel .icsel{background:var(--orange)}
 .icyears{display:grid;gap:10px}
 .icyear{border-radius:16px;padding:16px;background:linear-gradient(160deg,var(--navy),var(--navy3));color:#fff;border:1.5px solid rgba(255,255,255,.1)}
 .icyear.y3{border-color:rgba(78,205,196,.5);background:linear-gradient(160deg,#08202a,#0d2f3a)}
@@ -1009,7 +1017,8 @@ function projCalc(){
 }
 // Shared engine for "Residual growth" and the Income Calculator. newAccts(month, year) = accounts added that month.
 // Attrition always comes from the Residual growth fields (5% Year 2, 10% Year 3+ by default).
-function runProjection(gpAcct, newAccts, months){
+// fixedTier (optional): pay every month at that tier instead of unlocking tiers automatically.
+function runProjection(gpAcct, newAccts, months, fixedTier){
   const e = S.e;
   const keep = r => Math.pow(1 - Math.min(Math.max(r, 0), 100) / 100, 1 / 12);
   const k2 = keep(n(e.projAtt2)), k3 = keep(n(e.projAtt3));
@@ -1020,6 +1029,7 @@ function runProjection(gpAcct, newAccts, months){
     const gp = accts * gpAcct, last3 = [gp, ...rows.slice(-2).map(r => r.gp)];
     const reached = PROJ_TIERS.find(t => last3.length === 3 && last3.every(g => g >= t.min));
     if(reached && reached.pct > tier.pct) tier = reached;                // unlocked tiers never drop back
+    if(fixedTier) tier = fixedTier;
     const pay = gp * tier.pct / 100; total += pay;
     rows.push({m, yr, accts, gp, tier, pay, total});
   }
@@ -1035,7 +1045,9 @@ const IC_YEARS = 5, IC_DAYS = 20;   // 5 days/week × 4 weeks
 function incomeCalc(){
   const e = S.e, calls = Math.max(0, n(e.icCalls)), rate = Math.max(0, n(e.icRate)), gp = Math.max(0, n(e.icGp));
   const perMonth = calls * IC_DAYS * rate / 100;
-  return {calls, rate, gp, perMonth, rows: runProjection(gp, () => perMonth, IC_YEARS * 12)};
+  const fixed = PROJ_TIERS.find(t => t.id === e.icTier);                // selected tier card (none = automatic unlocks)
+  const autoRows = runProjection(gp, () => perMonth, IC_YEARS * 12);
+  return {calls, rate, gp, perMonth, autoRows, rows: fixed ? runProjection(gp, () => perMonth, IC_YEARS * 12, fixed) : autoRows};
 }
 const earnGoal = () =>S.e.goal === 'custom' ? n(S.e.goalCustom) : n(S.e.goal);
 // volume needed so that volume × margin% × tier% = goal
@@ -1127,12 +1139,13 @@ function renderEarn(keepScroll){
     <div class="icstat"><div class="k">Calls / week</div><div class="v num" data-eo="icWeek">—</div><div class="s">5-day commitment</div></div>
     <div class="icstat"><div class="k">Calls / month</div><div class="v num" data-eo="icMonth">—</div><div class="s">Full monthly volume</div></div></div></div>`;
   h += `<div class="card"><h3><span class="stepb orange">Tiers</span>How your commission tiers work</h3><div class="ictiers">
-    <div class="ictier t1"><div class="p">30%</div><div class="n">Tier 1 — starting rate</div><div class="h">Everyone starts here</div>
+    <div class="ictier t1 ${e.icTier===1?'sel':''}" data-ictier="1" role="button" tabindex="0" aria-pressed="${e.icTier===1}"><span class="icsel">✓ Selected</span><div class="p">30%</div><div class="n">Tier 1 — starting rate</div><div class="h">Everyone starts here</div>
       <div class="d">Your base rate on every dollar of portfolio GP.</div><span class="pill">Starting tier</span></div>
-    <div class="ictier t2" data-eo="icT2box"><div class="p">40%</div><div class="n">Tier 2 — growth rate</div><div class="h" data-eo="icT2h">—</div>
+    <div class="ictier t2 ${e.icTier===2?'sel':''}" data-ictier="2" role="button" tabindex="0" aria-pressed="${e.icTier===2}" data-eo="icT2box"><span class="icsel">✓ Selected</span><div class="p">40%</div><div class="n">Tier 2 — growth rate</div><div class="h" data-eo="icT2h">—</div>
       <div class="d">A 33% raise on your entire book once you hold the threshold 3 months in a row.</div><span class="pill" data-eo="icT2m">—</span></div>
-    <div class="ictier t3" data-eo="icT3box"><div class="p">50%</div><div class="n">Tier 3 — full residual</div><div class="h" data-eo="icT3h">—</div>
-      <div class="d">50 cents on every dollar your portfolio generates. Once unlocked, it stays.</div><span class="pill" data-eo="icT3m">—</span></div></div></div>`;
+    <div class="ictier t3 ${e.icTier===3?'sel':''}" data-ictier="3" role="button" tabindex="0" aria-pressed="${e.icTier===3}" data-eo="icT3box"><span class="icsel">✓ Selected</span><div class="p">50%</div><div class="n">Tier 3 — full residual</div><div class="h" data-eo="icT3h">—</div>
+      <div class="d">50 cents on every dollar your portfolio generates. Once unlocked, it stays.</div><span class="pill" data-eo="icT3m">—</span></div></div>
+    <p class="help" data-eo="icTierNote">${e.icTier ? `Using Tier ${e.icTier} (${PROJ_TIERS.find(t => t.id === e.icTier).pct}%) for every month of your projection. Tap it again to go back to automatic unlocks.` : 'Tap a tier to use its rate for your projection. With none selected, tiers unlock automatically as your book grows.'}</p></div>`;
   h += `<div class="card"><h3><span class="stepb">Step 3</span>Your income projection</h3>
     <p class="help" style="margin:0 2px 10px">Same calls. Same close rate. Watch what happens when your tier jumps and your entire book re-prices upward — this is how residual income compounds.</p>
     <div class="icyears" data-eo="icYears"></div>
@@ -1190,7 +1203,7 @@ function updateIncome(){
   set('icWeek', Math.round(ic.calls * 5).toLocaleString('en-US'));
   set('icMonth', Math.round(ic.calls * IC_DAYS).toLocaleString('en-US'));
   const tierInfo = (pct, min) => {
-    const r = rows.find(x => x.tier.pct >= pct), need = ic.gp > 0 ? Math.ceil(min / ic.gp) : 0;
+    const r = ic.autoRows.find(x => x.tier.pct >= pct), need = ic.gp > 0 ? Math.ceil(min / ic.gp) : 0;   // unlock info always from automatic tiers
     return {h: `Unlocked at ${money(min)} GP/mo${need ? ` (≈ ${need.toLocaleString('en-US')} accounts)` : ''}`,
             m: r ? `Month ${r.m}` : `Not within ${IC_YEARS} years`, reached: !!r};
   };
@@ -1284,7 +1297,8 @@ view.addEventListener('keydown', e => {
 view.addEventListener('click', async e => {
   const swb = e.target.closest('.sw[role="switch"]');
   if(swb){ e.preventDefault(); handleSwitch(swb); return; }
-  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-pace],[data-themeset]'); if(!b) return;
+  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-pace],[data-ictier],[data-themeset]'); if(!b) return;
+  if(b.dataset.ictier){ const id = +b.dataset.ictier; S.e.icTier = S.e.icTier === id ? null : id; saveEarn(); renderEarn(true); return; }
   if(b.dataset.themeset){ setTheme(b.dataset.themeset); renderSettings(); return; }
   if(b.dataset.projyears){ S.e.projYears = +b.dataset.projyears; saveEarn(); renderEarn(true); return; }
   if(b.dataset.pace){ S.e.projNew = b.dataset.pace; saveEarn(); renderEarn(true); toast(`Projection set to ${b.dataset.pace} new accounts/month`); return; }
