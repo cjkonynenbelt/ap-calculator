@@ -584,7 +584,7 @@ function yearsOver(annual){ return annual > 0 ? Math.max(MULTI_YEAR_BASE, Math.f
 const STATUSES = ['New','Presented','Follow-up','Statement requested','Proposal','Won','Lost'];
 
 // ActivityPay pricing is fixed — not editable anywhere in the app.
-const AP_RATE = 2.65;
+const AP_RATE = 2.50;
 
 // Advanced: processing pricing depends on the model on the statement
 const ADV_FLAT = [['cRate','Processing rate','%'],['cTxnFee','Per-transaction fee','$']];
@@ -984,7 +984,7 @@ function lockSave(){
 
 /* ---------- TAB: Earnings Calculator (private — never shown in Presentation Mode) ---------- */
 const EARN_TIERS = [{id:1, pct:30}, {id:2, pct:40}, {id:3, pct:50}];
-const EARN_STD_COST = '2.00', EARN_STD_MARGIN = '0.65';
+const EARN_STD_COST = '2.00', EARN_STD_MARGIN = (AP_RATE - 2.00).toFixed(2);   // standard margin = ActivityPay rate − 2.00% card cost
 const EARN_DEFAULTS = {volume:'100,000', cost:EARN_STD_COST, margin:EARN_STD_MARGIN, tier:1, goal:'1000', goalCustom:'',
   projGp:'270', projNew:'10', projAtt2:'5', projAtt3:'10', projYears:7,
   icCalls:'30', icRate:'2', icGp:'270'};
@@ -992,8 +992,13 @@ const EARN_GOALS = [500, 1000, 2000, 5000];
 const EARN_WHATIF = [25000, 50000, 100000, 250000, 500000, 1000000];
 S.e = Object.assign({}, EARN_DEFAULTS, store.get('ap.earn', {}));
 function saveEarn(){ store.set('ap.earn', S.e); }
+// Rate changed 2.65% → 2.50%: a saved margin that was still the old standard (2.65% − card cost, not typed
+// by hand) follows the new rate. Custom margins are left untouched.
+if(S.e._linked !== false && !blank(S.e.margin) && Math.abs(n(S.e.margin) - (2.65 - n(S.e.cost))) < 0.00005){
+  S.e.margin = (AP_RATE - n(S.e.cost)).toFixed(2); S.e._linked = true; saveEarn();
+}
 const tierPct = id => (EARN_TIERS.find(t => t.id === id) || EARN_TIERS[0]).pct;
-const stdMargin = cost => Math.round((AP_RATE - n(cost)) * 10000) / 10000;   // 2.65 − cost
+const stdMargin = cost => Math.round((AP_RATE - n(cost)) * 10000) / 10000;   // ActivityPay rate − cost
 const marginIsStandard = () => Math.abs(n(S.e.margin) - stdMargin(S.e.cost)) < 0.00005;
 function earnCalc(){
   const vol = n(S.e.volume), margin = n(S.e.margin), pct = tierPct(S.e.tier);
@@ -1061,7 +1066,7 @@ function eField(k, label, unit, opt={}){
     <span class="finput">${unit==='$'?'<i>$</i>':''}<input data-e="${k}" data-u="${unit}" type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(S.e[k])}" placeholder="${opt.ph||'0'}">${unit==='%'?'<i>%</i>':''}</span></label>`;
 }
 // Called on every keystroke and again when a field loses focus. Card cost and margin stay linked
-// (margin = 2.65% − cost) until the margin is typed to something else.
+// (margin = ActivityPay rate − cost) until the margin is typed to something else.
 function earnInput(t){
   const k = t.dataset.e;
   S.e[k] = t.value;
@@ -1083,7 +1088,7 @@ function renderEarn(keepScroll){
     <div class="aprate"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>ActivityPay rate</span><b class="num">${AP_RATE.toFixed(2)}%</b></div></div>`;
   h += `<div class="card"><h3>Monthly processing</h3>${eField('volume','Monthly processing volume','$',{big:true})}</div>`;
   h += `<div class="card"><h3>Modeling assumptions <span class="tag badge confirm">Editable</span></h3>
-    <div class="grid2">${eField('cost','Card / interchange cost','%',{big:true,ph:'2.00'})}${eField('margin','Commissionable margin','%',{big:true,ph:'0.65'})}</div>
+    <div class="grid2">${eField('cost','Card / interchange cost','%',{big:true,ph:'2.00'})}${eField('margin','Commissionable margin','%',{big:true,ph:EARN_STD_MARGIN})}</div>
     <p class="help" data-eo="marginNote"></p></div>`;
   h += `<div class="card"><h3>Your tier</h3><div class="tiers">${EARN_TIERS.map(t => `
     <button data-tier="${t.id}" class="${e.tier===t.id?'on':''}" aria-pressed="${e.tier===t.id}"><span>Tier ${t.id}</span><b>${t.pct}%</b><small>of margin</small></button>`).join('')}</div></div>`;
@@ -1173,7 +1178,7 @@ function updateEarn(){
     : `<b>Custom margin.</b> The standard would be ${AP_RATE.toFixed(2)}% − ${n(e.cost).toFixed(2)}% = ${sm.toFixed(2)}%.`, true);
   const note = $('[data-eo="marginNote"]');
   if(note && !(e.cost === EARN_STD_COST && e.margin === EARN_STD_MARGIN && e._linked))
-    note.insertAdjacentHTML('beforeend', ` <button class="linkbtn" data-act="earnReset">Reset to standard (2.00% / 0.65%)</button>`);
+    note.insertAdjacentHTML('beforeend', ` <button class="linkbtn" data-act="earnReset">Reset to standard (${EARN_STD_COST}% / ${EARN_STD_MARGIN}%)</button>`);
   set('warn', c.margin <= 0 ? '<div class="warn">The commissionable margin is zero or negative, so there are no earnings to calculate.</div>' : '', true);
   set('whatif', EARN_WHATIF.map(v => `<tr class="${v === c.vol ? 'cur' : ''}"><td>${shortMoney(v)}</td>${EARN_TIERS.map(t =>
     `<td class="${e.tier===t.id?'sel':''}">${tableMoney(v * c.margin / 100 * t.pct / 100)}</td>`).join('')}</tr>`).join(''), true);
