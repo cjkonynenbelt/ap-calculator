@@ -17,6 +17,17 @@
 <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
 <title>ActivityPay Calculator</title>
 <script>try{if(JSON.parse(localStorage.getItem('ap.theme'))==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
+<script>
+// Display Mode (Settings): 'auto' | 'phone' | 'desktop', saved as ap.display. Applied before first paint.
+function resolveDisplay(pref){
+  if(pref === 'phone' || pref === 'desktop') return pref;
+  var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;   // mouse / trackpad
+  return fine && window.innerWidth >= 900 ? 'desktop' : 'phone';
+}
+function displayPref(){ try{ var v = JSON.parse(localStorage.getItem('ap.display')); return v === 'phone' || v === 'desktop' ? v : 'auto'; }catch(e){ return 'auto'; } }
+function applyDisplay(){ var r = resolveDisplay(displayPref()), el = document.documentElement, changed = el.dataset.display !== r; el.dataset.display = r; return changed; }
+applyDisplay();
+</script>
 <style>
 :root{
   --navy:#0b1c2a; --navy2:#0f2638; --navy3:#16324a;
@@ -429,6 +440,131 @@ body.dragging-order,body.dragging-order *{cursor:grabbing!important}
   .wt.sm{font-size:11.5px}
   .wt.sm th{font-size:9px;letter-spacing:0}
   .wt.sm td{padding:8px 2px}
+}
+
+/* ============ DISPLAY MODE: DESKTOP (Settings → Display Mode; html[data-display]) ============
+   Same app, same data — only the layout changes. Column counts fall back to one column in narrow windows. */
+html[data-display="desktop"] #view{max-width:1240px;padding-left:calc(28px + var(--sal));padding-right:calc(28px + var(--sar))}
+html[data-display="desktop"] .topbar{padding-left:calc(28px + var(--sal));padding-right:calc(28px + var(--sar))}
+html[data-display="desktop"] #view[data-tab="calc"],
+html[data-display="desktop"] #view[data-tab="pres"],
+html[data-display="desktop"] #view[data-tab="earn"],
+html[data-display="desktop"] #view[data-tab="set"]{columns:460px 2;column-gap:22px}
+html[data-display="desktop"] #view>.card,
+html[data-display="desktop"] #view>.btnrow{break-inside:avoid;-webkit-column-break-inside:avoid}
+html[data-display="desktop"] #view>.h1,
+html[data-display="desktop"] #view>p.help,
+html[data-display="desktop"] #view>.seg{column-span:all}
+html[data-display="desktop"] #view>.seg{max-width:520px}
+html[data-display="desktop"] #view>.h1{font-size:30px}
+html[data-display="desktop"] #view[data-tab="list"] .search{max-width:560px}
+html[data-display="desktop"] #view[data-tab="list"] .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+html[data-display="desktop"] #view[data-tab="list"] .plist .item{margin-bottom:0}
+/* no on-screen keyboard on a desktop: keep the bottom bar while typing */
+html[data-display="desktop"] body.kb .dock{display:block}
+html[data-display="desktop"] body.kb #view{padding-bottom:calc(150px + var(--sab))}
+html[data-display="desktop"] .show-btn{max-width:520px}
+html[data-display="desktop"] .tabs{max-width:720px}
+html[data-display="desktop"] .tabs button{font-size:12px}
+html[data-display="desktop"] .rtool{justify-content:center}
+html[data-display="desktop"] .rtool .btn{flex:0 1 220px}
+/* Presentation Mode on a monitor: wider, larger slides */
+html[data-display="desktop"] .slide>*{max-width:900px}
+html[data-display="desktop"] .pres-top{padding:22px calc(40px + var(--sar)) 0 calc(40px + var(--sal))}
+html[data-display="desktop"] .pres-top .brand{font-size:19px}
+html[data-display="desktop"] .pres-top .brand svg{width:32px;height:32px}
+html[data-display="desktop"] .pres-top .biz{font-size:16px}
+html[data-display="desktop"] .pres-nav{width:100%;max-width:980px;margin:0 auto;padding-bottom:26px}
+html[data-display="desktop"] .pres-nav button{min-width:130px;font-size:17px;padding:16px 22px}
+html[data-display="desktop"] .eyebrow{font-size:17px;margin-bottom:24px}
+html[data-display="desktop"] .biz-h{font-size:clamp(40px,5vw,68px)}
+html[data-display="desktop"] .h2{font-size:clamp(36px,4.2vw,58px)}
+html[data-display="desktop"] .unit{font-size:18px}
+html[data-display="desktop"] .lbl{font-size:18px}
+html[data-display="desktop"] .explain,html[data-display="desktop"] .lead{font-size:23px;max-width:640px}
+html[data-display="desktop"] .tiles,html[data-display="desktop"] .slines,html[data-display="desktop"] .vs{max-width:680px;margin-left:auto;margin-right:auto}
+html[data-display="desktop"] .tile .k{font-size:14px}
+html[data-display="desktop"] .tile .v{font-size:38px}
+html[data-display="desktop"] .sline{padding:20px 26px}
+html[data-display="desktop"] .sline .caps{font-size:16px}
+html[data-display="desktop"] .arows{max-width:780px;margin-left:auto;margin-right:auto}
+html[data-display="desktop"] .arow .k{font-size:21px}
+html[data-display="desktop"] .arow .v{font-size:34px}
+html[data-display="desktop"] .arow.total .v{font-size:48px}
+html[data-display="desktop"] .fgrid{grid-template-columns:1fr 1fr;gap:14px}
+html[data-display="desktop"] .fitem .ft{font-size:20px}
+html[data-display="desktop"] .fitem .fd{font-size:15.5px}
+html[data-display="desktop"] .fgrid.compact .fd{display:block}
+html[data-display="desktop"] .bars{zoom:1.4}
+html[data-display="desktop"] .diff{font-size:24px}
+html[data-display="desktop"] .diff b{font-size:40px}
+html[data-display="desktop"] .fine{font-size:15px}
+html[data-display="desktop"] .contact{font-size:17px}
+@media (max-height:780px){   /* short laptop screens */
+  html[data-display="desktop"] .bars{zoom:1}
+  html[data-display="desktop"] .h2{font-size:36px}
+  html[data-display="desktop"] .eyebrow{margin-bottom:14px}
+  html[data-display="desktop"] .fgrid{gap:10px}
+  html[data-display="desktop"] .fgrid.compact .fd{display:none}
+  html[data-display="desktop"] .arow .v{font-size:28px}
+  html[data-display="desktop"] .arow.total .v{font-size:38px}
+}
+
+/* Phones held sideways (short screens): tighten everything so slides and the bottom bar still fit */
+@media (orientation:landscape) and (max-height:500px){
+  .show-btn{padding:9px;margin-bottom:4px;font-size:14px}
+  .tabs button{min-height:40px;font-size:10px;gap:1px}
+  .tabs button svg{width:18px;height:18px}
+  #view{padding-bottom:calc(118px + var(--sab))}
+  .pres-top{padding-top:8px}
+  .pres-nav{padding-top:4px;padding-bottom:6px}
+  .pres-nav button{padding:12px 18px;min-height:44px}
+  .glow{width:240px;height:240px}
+  .pinpad{gap:8px;overflow-y:auto}
+  .pinpad .xq{font-size:17px}
+  .pinpad .xs{margin-top:-4px}
+  .pinpad .pinerr{margin-top:-4px;min-height:16px;font-size:13px}
+  .pinpad .keys{grid-template-columns:repeat(3,64px);gap:6px}
+  .pinpad .keys button{height:46px;border-radius:16px;font-size:21px}
+  .pinpad .xb{gap:6px}
+  .pinpad .xb button{padding:10px}
+  .s-sav .mega{font-size:clamp(40px,17vh,72px)}
+  .s-sav .hero-lbl{margin-top:2px;font-size:12px}
+  .s-sav .slines{margin-top:6px;gap:8px}
+  .s-sav .sline{padding:5px 12px}
+  .s-sav .md{font-size:clamp(18px,6.5vh,28px)}
+  .s-sav .sline .caps{font-size:11px}
+  .s-sav .fine{margin-top:4px;font-size:11px}
+  .slide{padding-top:4px;padding-bottom:8px}
+  .eyebrow{margin-bottom:8px;font-size:12px}
+  .xxl{font-size:clamp(44px,19vh,84px)}
+  .mega{font-size:clamp(52px,24vh,104px)}
+  .xl{font-size:clamp(34px,14vh,64px)}
+  .md{font-size:clamp(22px,8vh,34px)}
+  .biz-h{font-size:clamp(22px,9vh,36px);margin-bottom:8px}
+  .h2{font-size:22px;margin-bottom:6px}
+  .unit{margin-top:4px;font-size:12px}
+  .lbl{margin-top:4px}
+  .pillx{margin-top:8px;padding:6px 14px}
+  .tiles{margin-top:10px}
+  .tile{padding:8px 10px}
+  .tile .v{font-size:22px;margin-top:2px}
+  .slines{margin-top:10px;grid-template-columns:1fr 1fr}
+  .sline{padding:8px 14px}
+  .explain,.lead{margin-top:8px;font-size:15px}
+  .bars{zoom:.5}
+  .diff{margin-top:8px;font-size:16px}
+  .diff b{font-size:22px}
+  .arow{padding:5px 4px}
+  .arow .k{font-size:14px}
+  .arow .v{font-size:20px}
+  .arow.total{padding-top:8px}
+  .arow.total .v{font-size:26px}
+  .fgrid{grid-template-columns:1fr 1fr;gap:6px}
+  .fitem,.fgrid.compact .fitem{padding:7px 12px}
+  .fitem .fd{display:none}
+  .vs{margin-top:10px;grid-template-columns:1fr 1fr}
+  .fine,.contact{margin-top:6px}
 }
 
 /* ============ DARK MODE (rep screens; presentation is already dark) ============ */
@@ -937,6 +1073,12 @@ function renderSettings(keepScroll){
   $('#view').innerHTML = `<div class="h1">Settings</div>
   <div class="card"><h3>Appearance</h3>
     <div class="seg" style="margin:0"><button data-themeset="light" class="${th==='light'?'on':''}" aria-pressed="${th==='light'}">☀️ Light Mode</button><button data-themeset="dark" class="${th==='dark'?'on':''}" aria-pressed="${th==='dark'}">🌙 Dark Mode</button></div></div>
+  <div class="card"><h3>Display Mode</h3>
+    <div class="seg" style="margin:0">${[['auto','Auto'],['phone','📱 iPhone'],['desktop','🖥️ Desktop']].map(([v, l]) =>
+      `<button data-displayset="${v}" class="${displayPref()===v?'on':''}" aria-pressed="${displayPref()===v}">${l}</button>`).join('')}</div>
+    <p class="help">${displayPref()==='auto'
+      ? `Auto picks the layout for this device. Right now it’s using the <b>${document.documentElement.dataset.display==='desktop'?'Desktop':'iPhone'}</b> layout.`
+      : `Always uses the <b>${displayPref()==='desktop'?'Desktop':'iPhone'}</b> layout on this device. Choose Auto to let the app decide.`}</p></div>
   <div class="card"><h3>Your details <span class="tag">shown on customer report</span></h3>
     ${f('repName','Your name','')}${f('repTitle','Title','ActivityPay Representative')}
     <div class="grid2">${f('repPhone','Phone','',{im:'tel',type:'tel'})}${f('repEmail','Email','',{im:'email',type:'email'})}</div></div>
@@ -1241,6 +1383,7 @@ function icFill(r){ const p = (Math.min(Math.max(+r.value, +r.min), +r.max) - r.
 /* ---------- tab routing ---------- */
 function go(tab){
   S.tab = tab; store.set('ap.tab', tab);
+  $('#view').dataset.tab = tab;                                            // lets the desktop layout style each tab
   $$('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   ({calc:renderCalc, pres:renderPres, list:renderList, earn:renderEarn, set:renderSettings})[tab]();
   $('#showBtn').hidden = !(tab === 'calc' || tab === 'pres');
@@ -1302,7 +1445,8 @@ view.addEventListener('keydown', e => {
 view.addEventListener('click', async e => {
   const swb = e.target.closest('.sw[role="switch"]');
   if(swb){ e.preventDefault(); handleSwitch(swb); return; }
-  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-pace],[data-ictier],[data-themeset]'); if(!b) return;
+  const b = e.target.closest('[data-mode],[data-model],[data-act],[data-open],[data-filter],[data-tier],[data-goal],[data-projyears],[data-pace],[data-ictier],[data-themeset],[data-displayset]'); if(!b) return;
+  if(b.dataset.displayset){ setDisplay(b.dataset.displayset); renderSettings(true); return; }
   if(b.dataset.ictier){ const id = +b.dataset.ictier; S.e.icTier = S.e.icTier === id ? null : id; saveEarn(); renderEarn(true); return; }
   if(b.dataset.themeset){ setTheme(b.dataset.themeset); renderSettings(); return; }
   if(b.dataset.projyears){ S.e.projYears = +b.dataset.projyears; saveEarn(); renderEarn(true); return; }
@@ -1464,9 +1608,19 @@ function setTheme(t){
   store.set('ap.theme', document.documentElement.dataset.theme);
 }
 
-// Re-fit large numbers when the screen size changes (rotation, resizing).
+/* ---------- display mode: Auto / iPhone / Desktop (saved on this device) ---------- */
+function setDisplay(pref){
+  store.set('ap.display', pref === 'phone' || pref === 'desktop' ? pref : 'auto');
+  applyDisplay();
+  if(!$('#present').hidden) fitPresentation(); else fitRep();
+}
+
+// Re-fit large numbers when the screen size changes (rotation, resizing). In Auto, the layout may switch too.
 let fitTimer;
-addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { if(!$('#present').hidden) fitPresentation(); else fitRep(); }, 120); });
+addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => {
+  const switched = applyDisplay();
+  if(!$('#present').hidden) fitPresentation(); else { if(switched && S.tab === 'set') renderSettings(true); fitRep(); }
+}, 120); });
 
 $$('.tabs button').forEach(b => b.addEventListener('click', () => go(b.dataset.tab)));
 
